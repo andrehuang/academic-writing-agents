@@ -9,12 +9,12 @@
   "plugins": [
     {
       "name": "academic-writing-agents",
-      "description": "11 specialist agents for academic writing review, research, drafting, polishing, and literature surveys, coordinated by a multi-agent orchestrator.",
+      "description": "12 specialist agents and 30 writing principles for academic writing review, research, drafting, polishing, bibliography auditing, and literature surveys, coordinated by a multi-agent orchestrator.",
       "source": ".",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "license": "MIT",
       "category": "productivity",
-      "keywords": ["academic-writing", "multi-agent", "orchestrator", "latex", "research"]
+      "keywords": ["academic-writing", "multi-agent", "orchestrator", "latex", "research", "bibliography"]
     }
   ]
 }

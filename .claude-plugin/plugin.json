@@ -1,7 +1,7 @@
 {
   "name": "academic-writing-agents",
-  "version": "1.0.0",
-  "description": "Multi-agent orchestrator for academic writing: 10 specialist agents for review, research, drafting, polishing, and figure work, plus a paper-crawling skill for literature surveys.",
+  "version": "2.0.0",
+  "description": "Multi-agent orchestrator for academic writing: 12 specialist agents and 30 writing principles for review, research, drafting, polishing, bibliography auditing, and literature surveys.",
   "author": {
     "name": "Haiwen Huang",
     "url": "https://github.com/andrehuang"
@@ -15,6 +15,7 @@
     "orchestrator",
     "paper-crawl",
     "literature-survey",
+    "bibliography",
     "latex",
     "research"
   ],
