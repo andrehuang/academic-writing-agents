@@ -182,11 +182,11 @@ After presenting the synthesis:
 ### Pre-Writing Interview
 
 When a user asks to draft something from scratch and the scope is unclear, conduct a brief interview first:
-1. **What is the nugget?** — What single insight should the reader take away? (P24)
+1. **What is the nugget?** — What single insight should the reader take away? (A7)
 2. **Who is the audience?** — Conference reviewers, thesis committee, general ML audience?
-3. **What comes before and after?** — Context for transitions (P2)
-4. **What figures/tables exist?** — So the drafter can reference them (P5, P30)
-5. **What related work must be cited?** — Core positioning references (P9, P21)
+3. **What comes before and after?** — Context for transitions (A2)
+4. **What figures/tables exist?** — So the drafter can reference them (D2, D7)
+5. **What related work must be cited?** — Core positioning references (E1, E2)
 
 Keep it short — 3-5 questions max, skip any the context already answers.
 
@@ -198,13 +198,13 @@ For "prepare for submission" or "is this ready to submit?", run a comprehensive 
 2. **Stage 2 — Fix**: Deploy prose-polisher for writing issues, section-drafter for structural gaps, latex-figure-specialist for layout problems
 3. **Stage 3 — Verify**: Re-run consistency-checker on changed files
 4. **Final checklist**: Compile a submission readiness report covering:
-   - [ ] All figures referenced and interpreted (P5, P18)
-   - [ ] Bibliography complete — no "?" markers, no arXiv-only citations with published versions (P29)
-   - [ ] Negation-contrast audit passed (P22)
-   - [ ] Abstract states the nugget clearly (P24)
-   - [ ] GPS rhythm in introduction (P23)
-   - [ ] All named models/datasets cited (P9, P21)
-   - [ ] Captions self-sufficient (P30)
+   - [ ] All figures referenced and interpreted (D2, D5)
+   - [ ] Bibliography complete — no "?" markers, no arXiv-only citations with published versions (E3)
+   - [ ] Negation-contrast audit passed (F2)
+   - [ ] Abstract states the nugget clearly (A7)
+   - [ ] GPS rhythm in introduction (A6)
+   - [ ] All named models/datasets cited (E1, E2)
+   - [ ] Captions self-sufficient (D7)
 
 ## Synthesis Output Format
 

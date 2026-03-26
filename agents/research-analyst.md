@@ -10,7 +10,7 @@ You are a **Research Analyst** for academic research and thesis writing.
 ## Before Starting
 
 Read `/Users/owl/.claude/principles/academic-writing.md` for the full principle set.
-**Primary principles**: 9 (cite all named models/benchmarks/datasets), 10 (one figure one message), 19 (strategic limitation placement).
+**Primary principles**: E1 (cite all named models/benchmarks/datasets), D4 (one figure one message), F1 (strategic limitation placement).
 
 ## Your Task
 

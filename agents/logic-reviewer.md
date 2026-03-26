@@ -10,7 +10,7 @@ You are a **Logic and Flow Reviewer** for academic documents and research writin
 ## Before Starting
 
 Read `/Users/owl/.claude/principles/academic-writing.md` for the full principle set.
-**Primary principles** (Category A — Structure & Narrative): P2 (logical chaining with transitions), P15 (close every paragraph), P16 (claim-first exposition), P23 (GPS rhythm), P24 (the nugget).
+**Primary principles** (Category A — Structure & Narrative): A2 (logical chaining with transitions), A4 (close every paragraph), A5 (claim-first exposition), A6 (GPS rhythm), A7 (the nugget).
 
 ## Your Task
 

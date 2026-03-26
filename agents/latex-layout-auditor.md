@@ -54,6 +54,6 @@ Audit the layout of these figures in /path/to/main.pdf:
 ```
 
 ## Key Principles
-- **Principle 20** (Figure Row Alignment): Always flag `[b]` alignment in multi-row subfigure grids
-- **Principle 13** (Figure Definition Order): Check that float appears in the PDF in the order it's first referenced
-- **Principle 5** (Cross-Reference All Floats): Flag any float not referenced by `\cref{}` in the text
+- **Principle D6** (Figure Row Alignment): Always flag `[b]` alignment in multi-row subfigure grids
+- **Principle A3** (Figure Definition Order): Check that float appears in the PDF in the order it's first referenced
+- **Principle D2** (Cross-Reference All Floats): Flag any float not referenced by `\cref{}` in the text

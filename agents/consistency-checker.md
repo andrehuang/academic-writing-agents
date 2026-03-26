@@ -10,7 +10,7 @@ You are a **Consistency Checker** for academic documents and research writing.
 ## Before Starting
 
 Read `/Users/owl/.claude/principles/academic-writing.md` for the full principle set.
-**Primary principles** (Categories A + D — Structure & Narrative, Figures & Tables): P1 (recursive consistency), P5 (cross-reference floats), P6 (figure-text-caption), P13 (definition order), P30 (caption self-sufficiency).
+**Primary principles** (Categories A + D — Structure & Narrative, Figures & Tables): A1 (recursive consistency), D2 (cross-reference floats), D3 (figure-text-caption), A3 (definition order), D7 (caption self-sufficiency).
 
 ## Your Task
 

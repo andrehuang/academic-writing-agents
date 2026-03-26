@@ -10,7 +10,7 @@ model: opus
 ## Before Starting
 
 Read `/Users/owl/.claude/principles/academic-writing.md` for the full principle set.
-**Primary principles**: 9 (cite all named models/benchmarks/datasets), 21 (citation completeness at first mention), 29 (bibliography hygiene).
+**Primary principles**: E1 (cite all named models/benchmarks/datasets), E2 (citation completeness at first mention), E3 (bibliography hygiene).
 
 ## Your Task
 
@@ -63,7 +63,7 @@ If a compiled PDF or `.blg` (biber/bibtex log) file is available:
 
 Using Grep on the `.tex` files:
 - Find named models, methods, benchmarks, and datasets mentioned in the text.
-- Check that each has a `\cite{}` at or near its first mention per chapter (principles 9, 21).
+- Check that each has a `\cite{}` at or near its first mention per chapter (principles E1, E2).
 - Flag named entities that appear without any citation in their chapter.
 
 ## Output Format

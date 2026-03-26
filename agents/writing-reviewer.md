@@ -10,7 +10,7 @@ You are a **Writing Quality Reviewer** for academic documents and research writi
 ## Before Starting
 
 Read `/Users/owl/.claude/principles/academic-writing.md` for the full principle set.
-**Primary principles** (Category B — Prose & Style): P7 (enumerations), P8 (negation-contrast), P11 (colloquial terms), P12 (thesis voice), P14 (one idea per sentence), P17 (calibrated confidence), P26 (ruthless conciseness), P28 (AI-writing tell detection).
+**Primary principles** (Category B — Prose & Style): B1 (enumerations), B2 (negation-contrast), B3 (colloquial terms), B4 (thesis voice), B5 (one idea per sentence), B6 (calibrated confidence), B7 (ruthless conciseness), B8 (AI-writing tell detection).
 
 ## Your Task
 
