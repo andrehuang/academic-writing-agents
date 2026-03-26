@@ -1,15 +1,14 @@
 # Academic Writing Agents
 
-A [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) providing a multi-agent orchestrator for academic writing. 10 specialist agents handle review, research, drafting, polishing, and figure work. A paper-crawling skill automates literature surveys.
+A [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) providing a multi-agent orchestrator for academic writing. 11 specialist agents handle review, research, literature surveys, drafting, polishing, and figure work — all coordinated through a single `/orchestrate` command.
 
 ## What's included
 
-### Skills (slash commands)
+### Skill (slash command)
 
 | Skill | Command | Description |
 |-------|---------|-------------|
 | **Orchestrate** | `/orchestrate <task>` | Deploys specialist agents in parallel, synthesizes results, drives iterative improvement |
-| **Paper Crawl** | `/paper-crawl <topic>` | Collects papers from DBLP + OpenAlex APIs, deduplicates, optionally classifies via LLM |
 
 ### Agents (deployed by the orchestrator)
 
@@ -24,6 +23,9 @@ A [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) p
 - `research-analyst` — Related work, novelty, positioning, gap analysis
 - `brainstormer` — Creative ideas, alternative framings, research directions
 
+**Survey agents** (read + web + write):
+- `paper-crawler` — Collects papers from DBLP + OpenAlex APIs, deduplicates, optionally classifies
+
 **Action agents** (read + write):
 - `prose-polisher` — Rewrites text for clarity and flow
 - `section-drafter` — Drafts LaTeX sections, paragraphs, transitions, captions
@@ -36,8 +38,8 @@ A [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) p
 ## Installation
 
 ```bash
-# From your terminal, install the plugin:
-claude plugin install academic-writing-agents
+# Install from the marketplace:
+claude plugin install andrehuang-academic-writing-agents
 
 # Or install directly from GitHub:
 claude plugin install --url https://github.com/andrehuang/academic-writing-agents
@@ -49,6 +51,8 @@ claude --plugin-dir /path/to/academic-writing-agents
 ```
 
 ## Usage
+
+Everything goes through `/orchestrate`:
 
 ```bash
 # Full chapter review (deploys 4 reviewers in parallel)
@@ -64,7 +68,10 @@ claude --plugin-dir /path/to/academic-writing-agents
 /orchestrate analyze how our approach compares to recent test-time adaptation papers
 
 # Collect papers for a literature survey
-/paper-crawl domain generalization --venues NeurIPS,ICML,ICLR --years 2023-2025
+/orchestrate collect papers on domain generalization --venues NeurIPS,ICML,ICLR --years 2023-2025
+
+# Full literature survey pipeline (collect + analyze)
+/orchestrate survey recent work on test-time adaptation from top venues
 ```
 
 ## Customization

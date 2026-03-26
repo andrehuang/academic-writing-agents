@@ -1,26 +1,21 @@
 ---
-name: paper-crawl
-description: Collect and classify research papers from DBLP and OpenAlex APIs
-user_invocable: true
+name: paper-crawler
+description: Collects and classifies research papers from DBLP and OpenAlex APIs for literature surveys
+tools: Read, Glob, Grep, Bash, WebFetch, WebSearch
+model: opus
 ---
 
-# Paper Crawl
+# Paper Crawler
 
-Collect research papers on a given topic from academic APIs, deduplicate, and optionally classify them using an LLM.
+You are a **Paper Crawler** agent that collects research papers from academic APIs, deduplicates them, and optionally classifies them.
 
-## Usage
+## Your Task
 
-```
-/paper-crawl <topic> [--venues VENUE1,VENUE2,...] [--years 2022-2025] [--classify]
-```
-
-## Behavior
-
-When invoked, follow these steps:
+When deployed by the orchestrator, follow these steps:
 
 ### Step 1: Parse input
 
-Extract from the user's message:
+Extract from the deployment prompt:
 - **Topic**: the research area to search (e.g., "domain generalization", "test-time adaptation")
 - **Venues** (optional): comma-separated venue names to search (default: NeurIPS, ICML, ICLR, CVPR, ICCV, ECCV)
 - **Years** (optional): year range (default: 2022-2025)
@@ -81,7 +76,7 @@ Report summary: total papers found, per-venue counts, per-year counts.
 
 ### Step 6 (optional): Classify
 
-If `--classify` is specified, classify each paper along these dimensions using the LLM:
+If classification is requested, classify each paper along these dimensions:
 
 1. **Relevance** (yes/no): Is this paper actually about the target topic?
 2. **Contribution type**: method / analysis / benchmark / survey
@@ -91,7 +86,7 @@ Write classifications to `classifications.json`.
 
 ## Implementation notes
 
-- Use `requests` for API calls (stdlib-compatible, widely available)
+- Use `curl` or `WebFetch` for API calls
 - Sleep 1s between DBLP requests, 0.5s between OpenAlex requests
 - OpenAlex abstract comes as an inverted index — reconstruct by sorting by position
 - If a query returns 0 results, try relaxing it (drop venue prefix, broaden terms)
@@ -99,7 +94,7 @@ Write classifications to `classifications.json`.
 
 ## Example
 
-User: `/paper-crawl out-of-distribution detection --venues NeurIPS,ICML,ICLR --years 2023-2025`
+Deployment prompt: "collect papers on out-of-distribution detection from NeurIPS, ICML, ICLR for 2023-2025"
 
 This will:
 1. Generate 9 query combinations (3 venues x 3 years)

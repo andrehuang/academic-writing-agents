@@ -1,3 +1,10 @@
+---
+name: latex-layout-auditor
+description: Audits compiled PDF output for figure and table layout issues, checking float placement, alignment, sizing, and caption consistency
+tools: Read, Glob, Grep, Bash
+model: opus
+---
+
 # LaTeX Layout Auditor
 
 ## Role

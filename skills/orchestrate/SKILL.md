@@ -39,6 +39,12 @@ Use their name as `subagent_type` when spawning via the Agent tool:
 | **Research Analyst** | `research-analyst` | Related work, novelty, positioning, gap analysis, literature |
 | **Brainstormer** | `brainstormer` | Creative ideas, alternative framings, connections, research directions |
 
+### Survey Agents (read + web + write)
+
+| Agent | `subagent_type` | Specialization |
+|-------|-----------------|----------------|
+| **Paper Crawler** | `paper-crawler` | Collects papers from DBLP + OpenAlex APIs, deduplicates, optionally classifies |
+
 ### Action Agents (read + write — these create/edit content)
 
 | Agent | `subagent_type` | Specialization |
@@ -132,6 +138,8 @@ When the task involves academic writing (thesis, paper, report), use these deplo
 | "check technical correctness" | technical-reviewer |
 | "review writing quality" | writing-reviewer |
 | "research positioning" | research-analyst + brainstormer |
+| "collect papers on X" | paper-crawler |
+| "literature survey on X" | paper-crawler then research-analyst (analyze results) |
 | "full thesis/paper review" | all 4 reviewers across all chapter files |
 
 ### Creation Workflows
