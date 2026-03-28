@@ -131,6 +131,16 @@ Or test locally during development:
 claude --plugin-dir /path/to/academic-writing-agents
 ```
 
+## Review Persistence & Coordination (NEW in v2.1)
+
+The orchestrator now **persists review findings** and supports **incremental review**:
+
+- **Review results saved to `.review/`**: After synthesis, aggregated findings (Critical/Important/Minor) are written to `.review/YYYY-MM-DD-<scope>.md` in your project. This means review results survive across sessions.
+- **Incremental review**: Before deploying reviewers, the orchestrator checks if unchanged files were already reviewed. If nothing changed since the last review, it presents the prior findings and asks if you want a fresh review or want to proceed to fixes.
+- **Cross-agent findings sharing**: When action agents (prose-polisher, section-drafter) are deployed to fix issues, they receive the specific reviewer concerns relevant to their scope. This ensures fixes address flagged issues rather than applying generic improvements.
+
+These features work with [Claude-Claw](https://github.com/andrehuang/claude-claw) for session continuity and task management.
+
 ## Customization
 
 ### Project-level agents

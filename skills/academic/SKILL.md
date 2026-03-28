@@ -240,6 +240,39 @@ For "prepare for submission" or "is this ready to submit?", run a comprehensive 
 
 Adapt this format to fit the task — for brainstorming, use idea categories. For research analysis, use strengths/weaknesses/opportunities. For creation tasks, present drafts with context. The format serves the content, not the other way around.
 
+## Review Persistence & Coordination (OpenClaw-Inspired)
+
+### Persist Review Findings
+
+After synthesis (Step 3), write aggregated findings to a `.review/` directory in the project:
+
+1. **Location:** `<project-root>/.review/YYYY-MM-DD-<scope>.md` (e.g., `.review/2026-03-28-chapter-5.md`)
+2. **Contents:** Full synthesis output (Critical/Important/Minor issues, patterns, recommendations)
+3. **Purpose:** Action agents (prose-polisher, section-drafter) read these findings before making changes, so they address specific reviewer concerns rather than editing blindly.
+
+### Incremental Review
+
+Before deploying reviewers, check if a prior review exists in `.review/`:
+
+1. Read the most recent review file for the same scope
+2. Check which files have changed since that review (via `git diff --name-only --since=<review-date>`)
+3. **If files are unchanged:** Skip re-reviewing them. Present the prior findings and ask if the user wants a fresh review or wants to proceed to fixes.
+4. **If files have changed:** Review only the changed files. Reference the prior review for unchanged context.
+5. **If no prior review exists:** Run the full review.
+
+This prevents wasting time re-reviewing unchanged sections and gives the user a sense of progress.
+
+### Cross-Agent Findings Sharing
+
+When deploying action agents (Stage 2 in pipelines):
+
+1. Include a summary of the review findings in each action agent's prompt
+2. Specifically reference the Critical and Important issues relevant to that agent's scope
+3. The agent should address these flagged issues, not just apply generic improvements
+4. After the action agent finishes, note which review issues it addressed
+
+This closes the loop between "diagnose" (reviewers) and "fix" (action agents).
+
 ## Core Principles
 
 - **Show your plan first.** Always tell the user which agents you're deploying and why before launching them. Transparency builds trust.
