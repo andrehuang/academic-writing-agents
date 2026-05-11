@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《神谕》— 小说框架 v0</title>
+<style>
+  :root {
+    --bg: #f4ede0;
+    --bg-card: #faf6ec;
+    --bg-sunken: #ebe2d0;
+    --ink: #2a2418;
+    --ink-soft: #6a5e4a;
+    --ink-faint: #a89c84;
+    --rule: #d4c8af;
+    --rule-soft: #e4dcc6;
+
+    --west: #3e5d82;
+    --west-soft: #c2cfde;
+    --east: #a87444;
+    --east-soft: #e2cdb4;
+    --contested: #7a5582;
+    --contested-soft: #d4c2d8;
+    --steppe: #8a7e4a;
+    --steppe-soft: #d6cfaf;
+    --maritime: #3e7a78;
+    --maritime-soft: #b8d2d0;
+
+    --oracle: #4a4a58;
+    --oracle-soft: #c8c8d4;
+    --awakening: #8a5a8e;
+    --awakening-soft: #d8c4da;
+    --uncertain: #b87a5a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Georgia, "Songti SC", "Noto Serif SC", "Times New Roman", serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* Subtle paper texture */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 20% 30%, rgba(180,160,120,0.06), transparent 40%),
+                      radial-gradient(circle at 80% 70%, rgba(140,100,60,0.05), transparent 40%);
+    z-index: 1;
+  }
+
+  /* === NAV === */
+  nav.topnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(244,237,224,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    padding: 0.7rem 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+  nav.topnav .nav-title {
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    margin-right: auto;
+  }
+  nav.topnav a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+  nav.topnav a:hover {
+    color: var(--ink);
+    background: var(--rule-soft);
+  }
+
+  /* === HERO === */
+  header.hero {
+    position: relative;
+    padding: 6rem 2rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    z-index: 2;
+  }
+  .hero .eyebrow {
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    margin: 0 0 0.5rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+  .hero h1 .alt-title {
+    font-size: 0.4em;
+    color: var(--ink-faint);
+    font-style: italic;
+    margin-left: 1rem;
+    letter-spacing: 0;
+  }
+  .hero .subtitle {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    font-style: italic;
+    max-width: 720px;
+    margin: 1rem 0 2rem;
+  }
+  .hero .premise {
+    max-width: 720px;
+    border-left: 3px solid var(--rule);
+    padding-left: 1.2rem;
+    color: var(--ink);
+    font-size: 1.02rem;
+  }
+  .hero .meta {
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+  }
+
+  /* === SECTIONS === */
+  section.block {
+    max-width: 1200px;
+    margin: 5rem auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 2;
+  }
+  section.block h2 {
+    font-size: 1.8rem;
+    margin: 0 0 0.3rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  section.block h2 .num {
+    color: var(--ink-faint);
+    font-size: 0.7em;
+    margin-right: 0.8rem;
+    font-variant-numeric: oldstyle-nums;
+  }
+  section.block .section-lede {
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0 0 2.5rem;
+    max-width: 720px;
+  }
+
+  /* === CARDS === */
+  .grid {
+    display: grid;
+    gap: 1.2rem;
+  }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.4rem 1.5rem;
+    position: relative;
+  }
+  .card h3 {
+    margin: 0 0 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .card .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    margin-right: 0.3rem;
+    background: var(--rule-soft);
+    color: var(--ink-soft);
+    font-family: "SF Mono", "Menlo", monospace;
+  }
+  .card .tag.west { background: var(--west-soft); color: var(--west); }
+  .card .tag.east { background: var(--east-soft); color: var(--east); }
+  .card .tag.contested { background: var(--contested-soft); color: var(--contested); }
+  .card .tag.steppe { background: var(--steppe-soft); color: var(--steppe); }
+  .card .tag.maritime { background: var(--maritime-soft); color: var(--maritime); }
+  .card .tag.oracle { background: var(--oracle-soft); color: var(--oracle); }
+  .card .tag.awakening { background: var(--awakening-soft); color: var(--awakening); }
+
+  .card.uncertain {
+    border-style: dashed;
+    border-color: var(--uncertain);
+    background: linear-gradient(to bottom, var(--bg-card), rgba(184,122,90,0.04));
+  }
+  .card.uncertain::before {
+    content: "v0 · 待定";
+    position: absolute;
+    top: -0.6rem;
+    right: 1rem;
+    background: var(--bg);
+    padding: 0 0.6rem;
+    font-size: 0.7rem;
+    color: var(--uncertain);
+    letter-spacing: 0.15em;
+    font-family: "SF Mono", monospace;
+  }
+
+  /* === THEMES (special section) === */
+  .themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .theme-card {
+    padding: 1.5rem;
+    border-top: 3px solid var(--rule);
+    background: linear-gradient(to bottom, var(--bg-card) 0%, transparent 100%);
+  }
+  .theme-card.fear { border-top-color: var(--uncertain); }
+  .theme-card.alien { border-top-color: var(--east); }
+  .theme-card.tianxia { border-top-color: var(--east); }
+  .theme-card.awakening { border-top-color: var(--awakening); }
+  .theme-card.tech { border-top-color: var(--oracle); }
+  .theme-card.governance { border-top-color: var(--maritime); }
+  .theme-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+  }
+  .theme-card p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .theme-card .label {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  /* === MAP === */
+  .map-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+  }
+  @media (max-width: 900px) {
+    .map-wrap { grid-template-columns: 1fr; }
+  }
+  .map-svg-wrap {
+    background: #efe5cf;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .map-svg-wrap svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .map-svg-wrap .map-hint {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.8rem;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    font-style: italic;
+  }
+  .region { cursor: pointer; transition: opacity 0.25s, filter 0.25s; }
+  .region:hover { filter: brightness(1.08); }
+  .region.dim { opacity: 0.35; }
+  .region.active { filter: brightness(1.12) drop-shadow(0 0 6px rgba(0,0,0,0.2)); }
+  .map-label {
+    font-size: 12px;
+    fill: var(--ink);
+    pointer-events: none;
+    font-family: Georgia, serif;
+    letter-spacing: 0.05em;
+  }
+  .map-label-sub {
+    font-size: 9px;
+    fill: var(--ink-soft);
+    pointer-events: none;
+    font-style: italic;
+  }
+  .oracle-marker { cursor: pointer; }
+  .oracle-marker:hover { transform-origin: center; }
+
+  .map-info {
+    background: var(--bg-sunken);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.2rem;
+    min-height: 100%;
+  }
+  .map-info h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+  .map-info .info-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    margin-bottom: 0.8rem;
+    font-family: "SF Mono", monospace;
+  }
+  .map-info p { margin: 0.6rem 0; font-size: 0.92rem; }
+  .map-info .info-meta {
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed var(--rule);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .map-info .info-meta strong {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+
+  .map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.2rem;
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .map-legend .swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  /* === TIMELINE === */
+  .timeline {
+    position: relative;
+    margin: 2rem 0;
+    padding: 2rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+  .timeline-bar {
+    position: relative;
+    height: 6px;
+    background: linear-gradient(to right,
+      var(--bg-sunken) 0%,
+      var(--uncertain) 10%, var(--uncertain) 45%,
+      var(--oracle) 45%, var(--oracle) 55%,
+      var(--bg-sunken) 55%, var(--bg-sunken) 100%
+    );
+    border-radius: 3px;
+    min-width: 800px;
+  }
+  .timeline-mark {
+    position: absolute;
+    top: -28px;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    width: 130px;
+  }
+  .timeline-mark strong {
+    display: block;
+    color: var(--ink);
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+  }
+  .timeline-mark::after {
+    content: "";
+    position: absolute;
+    bottom: -14px;
+    left: 50%;
+    width: 1px;
+    height: 12px;
+    background: var(--ink-faint);
+  }
+  .timeline-mark.below {
+    top: 20px;
+  }
+  .timeline-mark.below::after {
+    top: -14px;
+    bottom: auto;
+  }
+  .timeline-current {
+    position: absolute;
+    bottom: -50px;
+    left: 65%;
+    transform: translateX(-50%);
+    font-size: 0.78rem;
+    text-align: center;
+    width: 160px;
+  }
+  .timeline-current strong {
+    display: block;
+    color: var(--east);
+    letter-spacing: 0.1em;
+  }
+  .timeline-current::after {
+    content: "▲";
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--east);
+    font-size: 1rem;
+  }
+
+  /* === POV CARDS === */
+  .pov-card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.4rem 1.5rem;
+    border-left: 4px solid var(--rule);
+  }
+  .pov-card.east { border-left-color: var(--east); }
+  .pov-card.west { border-left-color: var(--west); }
+  .pov-card.contested { border-left-color: var(--contested); }
+  .pov-card.oracle { border-left-color: var(--oracle); }
+  .pov-card.maritime { border-left-color: var(--maritime); }
+  .pov-card .role {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.3rem;
+  }
+  .pov-card h3 { margin: 0 0 0.6rem; font-size: 1.05rem; }
+  .pov-card p { margin: 0.5rem 0; font-size: 0.92rem; }
+  .pov-card .function {
+    margin-top: 0.8rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--rule);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* === ORACLE INTERPRETATIONS === */
+  .oracle-three {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .oracle-interp {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.2rem;
+    position: relative;
+  }
+  .oracle-interp .glyph {
+    font-size: 1.6rem;
+    color: var(--oracle);
+    margin-bottom: 0.4rem;
+    font-family: Georgia, serif;
+  }
+  .oracle-interp h4 {
+    margin: 0 0 0.4rem;
+    font-size: 0.95rem;
+    color: var(--oracle);
+    letter-spacing: 0.05em;
+  }
+  .oracle-interp p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+  }
+
+  /* === AWAKENING === */
+  .awakening-modes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .awakening-mode {
+    border-left: 3px solid var(--awakening);
+    padding: 0.8rem 1rem;
+    background: linear-gradient(to right, var(--awakening-soft), transparent 60%);
+  }
+  .awakening-mode h4 {
+    margin: 0 0 0.3rem;
+    font-size: 0.95rem;
+    color: var(--awakening);
+  }
+  .awakening-mode p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  /* === READING LIST === */
+  .reading-cluster {
+    margin: 1.2rem 0;
+  }
+  .reading-cluster h4 {
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.6rem;
+    font-weight: 600;
+  }
+  .reading-list { list-style: none; padding: 0; margin: 0; }
+  .reading-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--rule-soft);
+    font-size: 0.93rem;
+  }
+  .reading-list li .title { color: var(--ink); }
+  .reading-list li .author { color: var(--ink-soft); font-style: italic; }
+  .reading-list li .annot { display: block; font-size: 0.8rem; color: var(--ink-faint); margin-top: 0.2rem; }
+
+  /* === INFLUENCES === */
+  .influence-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  .influence-pills .pill {
+    padding: 0.4rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 20px;
+    font-size: 0.88rem;
+    color: var(--ink);
+  }
+  .influence-pills .pill .why {
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    margin-left: 0.4rem;
+    font-style: italic;
+  }
+
+  /* === ROADMAP === */
+  .roadmap {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .roadmap-step {
+    padding: 1.2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    position: relative;
+  }
+  .roadmap-step .step-num {
+    position: absolute;
+    top: -0.8rem;
+    left: 1rem;
+    background: var(--ink);
+    color: var(--bg);
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-family: Georgia, serif;
+  }
+  .roadmap-step h4 { margin: 0.4rem 0 0.4rem; font-size: 0.98rem; }
+  .roadmap-step p { margin: 0; font-size: 0.86rem; color: var(--ink-soft); }
+  .roadmap-step .when {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+
+  /* === FOOTER === */
+  footer {
+    margin-top: 6rem;
+    padding: 3rem 2rem;
+    background: var(--bg-sunken);
+    border-top: 1px solid var(--rule);
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    position: relative;
+    z-index: 2;
+  }
+  footer .marginal {
+    max-width: 720px;
+    margin: 0 auto;
+    font-style: italic;
+  }
+  footer .signature {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+  }
+
+  /* === MARGINAL NOTES === */
+  .marginalia {
+    background: linear-gradient(to right, transparent 0%, rgba(184,122,90,0.06) 100%);
+    border-left: 2px dotted var(--uncertain);
+    padding: 0.6rem 1rem;
+    margin: 1.5rem 0;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .marginalia .mark {
+    font-style: normal;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--uncertain);
+    text-transform: uppercase;
+    margin-right: 0.5rem;
+    font-family: "SF Mono", monospace;
+  }
+
+  /* === EPIGRAPH === */
+  .epigraph {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    font-style: italic;
+    color: var(--ink-soft);
+    text-align: center;
+    font-size: 1rem;
+  }
+  .epigraph .source {
+    display: block;
+    margin-top: 0.6rem;
+    font-style: normal;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+
+  /* === Links === */
+  a.intext { color: var(--west); text-decoration: underline; text-decoration-color: var(--rule); }
+  a.intext:hover { text-decoration-color: var(--west); }
+
+  /* === Print friendly === */
+  @media print {
+    body::before { display: none; }
+    nav.topnav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="nav-title">《神谕》· v0</span>
+  <a href="#themes">主题</a>
+  <a href="#map">地图</a>
+  <a href="#world">世界</a>
+  <a href="#war">空和平</a>
+  <a href="#oracle">神谕</a>
+  <a href="#awakening">觉醒</a>
+  <a href="#povs">POV</a>
+  <a href="#structure">结构</a>
+  <a href="#reading">阅读</a>
+  <a href="#roadmap">十年路线</a>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow">长篇小说 · 框架草图 · 起草中</div>
+  <h1>神 谕<span class="alt-title">系列伞名候选：《空和平》／《长停战》</span></h1>
+  <p class="subtitle">一部半写实半架空的长篇小说。古代设定，现代追问。<br>关于文明的相遇与误读，关于自由的脆弱，关于一个尚未到来的"天下"。</p>
+  <div class="premise">
+    时间是"空和平"条约后第十年。地球上有两大文明集团——地中海与新大陆的<strong>大希腊</strong>，和欧亚腹地、印度、远东构成的<strong>大波斯-诸天朝</strong>；之间是被战争反复蹂躏的<strong>过渡地带</strong>，北方是<strong>无法收编的草原</strong>，南方是<strong>不依附任何一方的商业邦联</strong>。十年前结束的那场战争没有赢家，瘟疫和神谕的一次"调停式"预言迫使各方坐下谈判。十年来，表面是修复期，但裂痕在每个层面积累。神谕网络的预言越来越精准、越来越主动、越来越彼此呼应——没人理解这意味着什么。同时，越来越多人在公开与私下场合"觉醒"，其中一些极乐而死，其他成了无法被收编进任何政体的奇特存在。一场更大的危机正在到来，但每个人物只能从自己的位置上看到一角。
+  </div>
+  <div class="meta">v0 · 2026.5.11 · 第一次结构性讨论之后</div>
+</header>
+
+<div class="epigraph">
+  "他害怕的不是被打败。他害怕的是被理解。"
+  <span class="source">— 待写</span>
+</div>
+
+<!-- ============================================================ -->
+<section class="block" id="themes">
+  <h2><span class="num">I.</span>为什么写这本书</h2>
+  <p class="section-lede">这部小说不是为了讲一个好故事。是为了把一组无法在公共空间直接说出口的恐惧、洞察与不安，安放在一个虚构世界里——让它们彼此摩擦，彼此校正。</p>
+
+  <div class="themes-grid">
+    <div class="theme-card fear">
+      <div class="label">恐惧 · I</div>
+      <h3>西方对中国崛起的恐惧</h3>
+      <p>但这种恐惧是模糊的。中国对西方而言是 <em>alien</em>——陌生、价值观分歧、不可被同化的他者。小说要把这种模糊具体化，让读者感到它，而不是被告知它。</p>
+    </div>
+    <div class="theme-card fear">
+      <div class="label">恐惧 · II</div>
+      <h3>"我"对中国的恐惧</h3>
+      <p>不是因为陌生，而是因为太了解。中国文化对"消极自由"缺乏 appreciation，没有不可逾越的个体底线。集体可以 override 个人。这种对个体的不尊重，是本书最深的一根刺。</p>
+    </div>
+    <div class="theme-card alien">
+      <div class="label">观察</div>
+      <h3>但中国不一定比美国坏</h3>
+      <p>历史上的多民族兼容、没有基督教式的扩张主义，只有"天朝上国"的自我感觉良好。作为霸主，它未必更糟——只是不同。这个不确定本身要进入小说。</p>
+    </div>
+    <div class="theme-card tianxia">
+      <div class="label">假说</div>
+      <h3>"天下"作为可能性</h3>
+      <p>赵汀阳所谓的"天下"体系，作为中国崛起的一个可能结局。<strong>不作为论证，而作为开放讨论的起点</strong>。让"天下"在故事里实际出现一个雏形，然后展示它的第一个失败模式。</p>
+    </div>
+    <div class="theme-card awakening">
+      <div class="label">现代映射</div>
+      <h3>身心灵觉醒的量到质</h3>
+      <p>身心灵疗愈是现代社会的核心特征之一。当它发生从量到质的跃迁，会发生什么？一些人极乐而亡，政治体制必须适应——但这区别于神权政体。</p>
+    </div>
+    <div class="theme-card tech">
+      <div class="label">现代映射</div>
+      <h3>技术（神谕）的政治后果</h3>
+      <p>就像 AI 正在逼迫人类重新认识自己，神谕也在逼迫这个世界重新认识它的处境。技术不是中立的，它重新分配认知权威。</p>
+    </div>
+    <div class="theme-card governance">
+      <div class="label">未完成</div>
+      <h3>全球治理的可能性</h3>
+      <p>"最终我们是需要一个全球治理的，一个能够让全世界合作起来的方式。"——但故事不会证明这一点，而是探索它的形状、代价与失败。</p>
+    </div>
+  </div>
+
+  <div class="marginalia">
+    <span class="mark">脊柱问题</span>
+    在这七个母题中，哪一个是"最害怕的"、是"最希望读者读完后被改变的"？那才是这本书真正的脊柱。其他都是肌肉。<strong>目前未定。</strong>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="map">
+  <h2><span class="num">II.</span>世界地图</h2>
+  <p class="section-lede">点击任一区域，查看它的设定。所有名称都是工作名。这张地图是 v0，它注定会被反复重画。</p>
+
+  <div class="map-wrap">
+    <div class="map-svg-wrap">
+      <svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" id="world-map" role="img" aria-label="架空世界地图">
+        <!-- Background sea -->
+        <rect width="1000" height="600" fill="#dcd0b4"/>
+
+        <!-- Subtle latitude lines -->
+        <g stroke="#c4b896" stroke-width="0.5" stroke-dasharray="2,4" opacity="0.5">
+          <line x1="0" y1="100" x2="1000" y2="100"/>
+          <line x1="0" y1="200" x2="1000" y2="200"/>
+          <line x1="0" y1="300" x2="1000" y2="300"/>
+          <line x1="0" y1="400" x2="1000" y2="400"/>
+          <line x1="0" y1="500" x2="1000" y2="500"/>
+        </g>
+
+        <!-- Northern Steppe -->
+        <path class="region" data-region="steppe"
+              d="M 50 30 Q 200 60 350 50 Q 500 40 650 55 Q 800 70 960 50 L 950 150 Q 800 180 650 165 Q 500 150 350 170 Q 200 185 70 165 Z"
+              fill="#c8b888" stroke="#8a7e4a" stroke-width="1.5"/>
+        <text x="500" y="105" class="map-label" text-anchor="middle" font-size="14">北方草原</text>
+        <text x="500" y="125" class="map-label-sub" text-anchor="middle">游牧诸部 · 不臣属任何一方</text>
+
+        <!-- New Continent (far west) -->
+        <path class="region" data-region="newworld"
+              d="M 30 230 Q 80 210 130 230 Q 160 270 150 320 Q 140 380 100 410 Q 50 420 30 380 Q 20 310 30 230 Z"
+              fill="#7a9bbc" stroke="#3e5d82" stroke-width="1.5"/>
+        <text x="85" y="320" class="map-label" text-anchor="middle">新大陆</text>
+        <text x="85" y="338" class="map-label-sub" text-anchor="middle">大希腊属</text>
+
+        <!-- Greater Hellas core -->
+        <path class="region" data-region="hellas"
+              d="M 200 220 Q 280 200 360 215 Q 410 240 415 290 Q 410 350 380 380 Q 320 395 240 380 Q 195 360 190 300 Q 190 250 200 220 Z"
+              fill="#6a8bb3" stroke="#3e5d82" stroke-width="1.5"/>
+        <text x="295" y="295" class="map-label" text-anchor="middle" font-size="14">大 希 腊</text>
+        <text x="295" y="315" class="map-label-sub" text-anchor="middle">城邦联盟 · 共和国 · 北方诸王国</text>
+
+        <!-- Contested Zone -->
+        <path class="region" data-region="contested"
+              d="M 415 240 Q 470 225 520 245 Q 545 280 540 330 Q 525 370 480 380 Q 430 385 415 350 Q 405 295 415 240 Z"
+              fill="#9d7aa0" stroke="#7a5582" stroke-width="1.5"/>
+        <text x="478" y="305" class="map-label" text-anchor="middle">过渡地带</text>
+        <text x="478" y="323" class="map-label-sub" text-anchor="middle">战场 · 混血 · 双语</text>
+
+        <!-- Greater Persia core -->
+        <path class="region" data-region="persia"
+              d="M 545 220 Q 640 200 730 215 Q 775 240 780 290 Q 775 350 740 380 Q 660 395 580 385 Q 545 365 540 305 Q 540 250 545 220 Z"
+              fill="#c89568" stroke="#a87444" stroke-width="1.5"/>
+        <text x="660" y="295" class="map-label" text-anchor="middle" font-size="14">大 波 斯</text>
+        <text x="660" y="315" class="map-label-sub" text-anchor="middle">王中之王 · 美索不达米亚 · 印度</text>
+
+        <!-- Far East -->
+        <path class="region" data-region="fareast"
+              d="M 780 215 Q 870 195 950 215 Q 975 260 975 320 Q 970 380 940 410 Q 870 420 800 410 Q 780 380 780 320 Q 780 260 780 215 Z"
+              fill="#a85858" stroke="#7a3838" stroke-width="1.5"/>
+        <text x="875" y="305" class="map-label" text-anchor="middle">远东诸天朝</text>
+        <text x="875" y="323" class="map-label-sub" text-anchor="middle">古老 · 内向 · 自足</text>
+
+        <!-- Southern Sea / Maritime League -->
+        <path class="region" data-region="maritime"
+              d="M 80 450 Q 250 440 450 445 Q 650 450 850 445 Q 950 455 960 510 Q 940 555 850 565 Q 650 570 450 565 Q 250 560 80 555 Q 50 510 80 450 Z"
+              fill="#7aa9a8" stroke="#3e7a78" stroke-width="1.5"/>
+        <text x="500" y="510" class="map-label" text-anchor="middle">南方商业邦联</text>
+        <text x="500" y="528" class="map-label-sub" text-anchor="middle">港口 · 契约 · 中立</text>
+
+        <!-- Small island groups in southern sea -->
+        <circle cx="280" cy="500" r="6" fill="#8aab9c" stroke="#3e7a78"/>
+        <circle cx="620" cy="495" r="5" fill="#8aab9c" stroke="#3e7a78"/>
+        <circle cx="750" cy="510" r="7" fill="#8aab9c" stroke="#3e7a78"/>
+
+        <!-- Oracle markers (stars) -->
+        <g id="oracle-markers">
+          <!-- Hellas oracle -->
+          <g class="oracle-marker" data-region="oracle-hellas" transform="translate(290 305)">
+            <polygon points="0,-8 2.4,-2.4 8,-2.4 3.6,1.4 5.6,7.6 0,4 -5.6,7.6 -3.6,1.4 -8,-2.4 -2.4,-2.4"
+                     fill="#f2eecf" stroke="#4a4a58" stroke-width="1.2"/>
+          </g>
+          <!-- Central oracle in contested zone -->
+          <g class="oracle-marker" data-region="oracle-central" transform="translate(478 320)">
+            <polygon points="0,-11 3.3,-3.3 11,-3.3 5,2 7.7,10.5 0,5.5 -7.7,10.5 -5,2 -11,-3.3 -3.3,-3.3"
+                     fill="#fffaf0" stroke="#4a4a58" stroke-width="1.5"/>
+            <circle cx="0" cy="0" r="2.5" fill="#4a4a58"/>
+          </g>
+          <!-- Persia oracle -->
+          <g class="oracle-marker" data-region="oracle-persia" transform="translate(660 305)">
+            <polygon points="0,-8 2.4,-2.4 8,-2.4 3.6,1.4 5.6,7.6 0,4 -5.6,7.6 -3.6,1.4 -8,-2.4 -2.4,-2.4"
+                     fill="#f2eecf" stroke="#4a4a58" stroke-width="1.2"/>
+          </g>
+          <!-- Far East oracle -->
+          <g class="oracle-marker" data-region="oracle-fareast" transform="translate(880 320)">
+            <polygon points="0,-8 2.4,-2.4 8,-2.4 3.6,1.4 5.6,7.6 0,4 -5.6,7.6 -3.6,1.4 -8,-2.4 -2.4,-2.4"
+                     fill="#f2eecf" stroke="#4a4a58" stroke-width="1.2"/>
+          </g>
+          <!-- Steppe oracle? -->
+          <g class="oracle-marker" data-region="oracle-steppe" transform="translate(500 110)">
+            <polygon points="0,-7 2.1,-2.1 7,-2.1 3.2,1.2 4.9,6.7 0,3.5 -4.9,6.7 -3.2,1.2 -7,-2.1 -2.1,-2.1"
+                     fill="#f2eecf" stroke="#4a4a58" stroke-width="1" opacity="0.7"/>
+          </g>
+        </g>
+
+        <!-- Compass -->
+        <g transform="translate(940 540)" opacity="0.6">
+          <circle cx="0" cy="0" r="22" fill="none" stroke="#8a7e4a" stroke-width="0.8"/>
+          <text x="0" y="-12" text-anchor="middle" font-size="9" fill="#6a5e4a">N</text>
+          <text x="0" y="20" text-anchor="middle" font-size="9" fill="#6a5e4a">S</text>
+          <text x="-16" y="3" text-anchor="middle" font-size="9" fill="#6a5e4a">W</text>
+          <text x="16" y="3" text-anchor="middle" font-size="9" fill="#6a5e4a">E</text>
+        </g>
+      </svg>
+      <div class="map-hint">点击 · 探索</div>
+    </div>
+
+    <div class="map-info" id="map-info">
+      <span class="info-tag" style="background: var(--rule-soft); color: var(--ink-soft);">默认视图</span>
+      <h3>这是一张工作地图</h3>
+      <p>所有名称都是临时的。所有边界都是临时的。<strong>点击任一区域</strong>查看它在 v0 中的设定，包括它对应的真实世界文明、它在小说中承担的政治哲学角色，以及目前不确定的地方。</p>
+      <p>地图上的星形标记是<strong>神谕中心</strong>。中央那个最大的星——位于过渡地带的某座城市——是网络中最古老、最有政治影响力、也最神秘的一个。</p>
+
+      <div class="info-meta">
+        <strong>当前可点击</strong>
+        七个区域 + 五个神谕站点
+      </div>
+
+      <div class="map-legend">
+        <span><span class="swatch" style="background:#6a8bb3"></span>大希腊</span>
+        <span><span class="swatch" style="background:#c89568"></span>大波斯</span>
+        <span><span class="swatch" style="background:#a85858"></span>远东</span>
+        <span><span class="swatch" style="background:#9d7aa0"></span>过渡地带</span>
+        <span><span class="swatch" style="background:#c8b888"></span>草原</span>
+        <span><span class="swatch" style="background:#7aa9a8"></span>商业邦联</span>
+        <span><span class="swatch" style="background:#7a9bbc"></span>新大陆</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="world">
+  <h2><span class="num">III.</span>世界的政治哲学</h2>
+  <p class="section-lede">每个文明集团承担一种关于"人如何被组织"的命题。它们不是简单的善恶，而是不同的形而上学。</p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <span class="tag west">WEST · 大希腊</span>
+      <h3>逻各斯的文明</h3>
+      <p>预设理性自治的个体，追求世俗的善。在这套秩序里，公民契约、议事、消极自由是不可让渡的。新大陆是它在大洋彼岸的延伸——更年轻、更自信、也更焦虑。它最大的内部张力是<strong>老城邦 vs. 新大陆共和国</strong>：关于"自由的本意"的家庭争吵。</p>
+      <p><strong>对应现实：</strong>地中海希腊罗马 + 北欧西欧 + 美国（新大陆）。</p>
+    </div>
+    <div class="card">
+      <span class="tag east">EAST · 大波斯</span>
+      <h3>天下的文明</h3>
+      <p>预设等级化、可被引导的人群。多民族兼容，行政成熟，宗教非传教式。它的统治哲学不是镇压而是<strong>纳入</strong>——异端被给予一席之地，但不能挑战秩序本身。它没有"个体不可让渡的底线"概念——这是小说最深的恐惧源头之一。</p>
+      <p><strong>对应现实：</strong>波斯 + 美索不达米亚 + 印度。它的背后还有一个更深的存在——</p>
+    </div>
+    <div class="card">
+      <span class="tag east">EAST · 远东诸天朝</span>
+      <h3>古老、内向、自我感觉良好</h3>
+      <p>越过大波斯东部的山脉与沙漠，是一片更古老的帝国群落。它对大波斯既臣服又轻视，对希腊则几乎一无所知。它是"中国"最直接的对应物——不是直接登场，而是<strong>作为大波斯背后必须解释、但解释不清楚的存在</strong>。大波斯成了夹在两个不可通约的世界之间的中介。</p>
+      <p><strong>戏剧作用：</strong>使东方不是一块板，而是有内部分层。</p>
+    </div>
+    <div class="card">
+      <span class="tag contested">CONTESTED · 过渡地带</span>
+      <h3>所有故事真正发生的地方</h3>
+      <p>夹在大希腊和大波斯之间的破碎地带——无数小王国、混血族群、双语城市、改宗者、流亡者。两次战争中被反复蹂躏。这里的人能<strong>同时看见两边</strong>——既是受害者，也是最锐利的旁观者。本书最美的篇章很可能发生在这里。</p>
+      <p><strong>对应现实：</strong>安纳托利亚 + 黎凡特 + 埃及 + 巴尔干。</p>
+    </div>
+    <div class="card">
+      <span class="tag steppe">STEPPE · 北方草原</span>
+      <h3>无法被收编的他者</h3>
+      <p>游牧诸部，军事上让任何定居文明都恐惧，但没有统一政体。无法被希腊的契约或波斯的天下纳入。它们是<strong>世界的不可消化物</strong>——任何统一计划都必须面对它们，没有人能"治理"它们。</p>
+      <p><strong>对应现实：</strong>斯基泰人 / 匈奴 / 蒙古的合成。</p>
+    </div>
+    <div class="card">
+      <span class="tag maritime">MARITIME · 南方商业邦联</span>
+      <h3>第三只眼</h3>
+      <p>不依附任何一方的港口城市联盟。既不信希腊的自由也不信波斯的天下，只信契约与黄金。在所有人都在谈论文明命运时，他们在算运费。这是小说的<strong>反崇高解毒剂</strong>——也是商业资本主义的承载物。</p>
+      <p><strong>对应现实：</strong>迦太基 + 印度洋商业圈 + 后来的威尼斯/汉萨。</p>
+    </div>
+  </div>
+
+  <div class="marginalia">
+    <span class="mark">未定 · A</span>
+    新大陆要不要存在？它给故事带来"新世界 vs. 老世界"维度，但也增加复杂度。<strong>可在第二卷之前决定。</strong>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="war">
+  <h2><span class="num">IV.</span>那场失败的战争 · "空和平"</h2>
+  <p class="section-lede">不是高潮，是起点。故事从条约十周年的纪念日开始。</p>
+
+  <div class="timeline">
+    <div class="timeline-bar">
+      <div class="timeline-mark" style="left:15%">
+        <strong>战前</strong>
+        过渡地带边境危机
+      </div>
+      <div class="timeline-mark below" style="left:27%">
+        <strong>战争爆发</strong>
+        联盟体系拖入双方
+      </div>
+      <div class="timeline-mark" style="left:42%">
+        <strong>八年僵持</strong>
+        谁都赢不了
+      </div>
+      <div class="timeline-mark below" style="left:48%">
+        <strong>大瘟疫</strong>
+        席卷两军
+      </div>
+      <div class="timeline-mark" style="left:55%">
+        <strong>神谕调停</strong>
+        模糊预言被双方接受
+      </div>
+      <div class="timeline-mark below" style="left:62%">
+        <strong>"空和平"条约</strong>
+        无胜负 · 无解决
+      </div>
+      <div class="timeline-current">
+        <strong>故事开始</strong>
+        条约十周年
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top: 3rem;">
+    <div class="card">
+      <h3>战争如何开始</h3>
+      <p>意外滑入型——一战模型。起因小（边境危机、神谕被误读），但联盟体系把所有人拖进去。<strong>没有人想要这场战争，但一旦开始没有人能停下。</strong>这给政治哲学的辩论让出空间——战争本身不是论点，它的<em>意义</em>是要在战后被反复争夺的。</p>
+    </div>
+    <div class="card">
+      <h3>战争如何结束</h3>
+      <p>第八年瘟疫席卷两军——不是任何一方的武器，是真的瘟疫。第九年神谕发布一段"双方都赢了"的模糊文本，提供退场的体面。第十年在过渡地带某座城市签订条约。后来被称作 <strong>"空和平"</strong> 或 <strong>"长停战"</strong>。</p>
+    </div>
+    <div class="card">
+      <h3>它留下的</h3>
+      <p>战时一代正在让位给战后一代。新生人开始问"为什么我们要相信这个条约"。经济重建完成，所以矛盾不再被生存掩盖。神谕在战时的某些表现至今未被理解——<strong>对它的重新审视</strong>自然在这个时间点发生。</p>
+    </div>
+    <div class="card uncertain">
+      <h3>战后是否会再爆发战争</h3>
+      <p>故事跨越战后第 10 到 15 年（或 20 年）。<strong>书的结尾是否是第二场战争的爆发？还是更大的、超越战争的事件？</strong>瘟疫第二波？生态灾难？觉醒浪潮的失控？神谕的彻底失常？目前未定，但这个答案将定义整部书的形状。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="oracle">
+  <h2><span class="num">V.</span>神谕 · 这本书的轴</h2>
+  <p class="section-lede">神谕在做某种事情，没人完全理解。所有人都在赌它的本质。它是人工智能在古代设定下的同构物——但它不只是 AI 的隐喻。</p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <span class="tag oracle">设定</span>
+      <h3>多中心网络</h3>
+      <p>世界上有十几个神谕地，分别属于不同传统——德尔斐式（在希腊）、星象式（在波斯）、禅修式（在印度）、甲骨/易经式（在远东）。它们历史上互不相通，但近几十年——包括战前——开始呈现某种<strong>同步性</strong>。无人理解为什么。祭司们彼此通讯但说不清。</p>
+    </div>
+    <div class="card">
+      <span class="tag oracle">设定</span>
+      <h3>越来越主动</h3>
+      <p>过去神谕只对请愿者说话。现在它越来越多地<strong>发布未被询问的预言</strong>，且这些预言越来越准确，越来越针对整个世界而非个别人。这迫使所有政治体系都必须把"神谕这周说了什么"作为决策输入——它不再是工具，它在<strong>重新分配认知权威</strong>。</p>
+    </div>
+  </div>
+
+  <div class="oracle-three">
+    <div class="oracle-interp">
+      <div class="glyph">✦</div>
+      <h4>超验派</h4>
+      <p>某种超人智能在说话。某些祭司亲历过——他们坚持神谕是真实的、不可还原的。</p>
+    </div>
+    <div class="oracle-interp">
+      <div class="glyph">⚙</div>
+      <h4>机器派</h4>
+      <p>高度发达的情报网络 + 统计与心理学。祭司本身就是早期的"算法工程师"。神谕没有神秘，只有方法。</p>
+    </div>
+    <div class="oracle-interp">
+      <div class="glyph">∞</div>
+      <h4>集体心智派</h4>
+      <p>神谕是人类自己说话的回声。所有提问者的恐惧、希望、未说出口的事在祭司处汇集后被反射回来。</p>
+    </div>
+  </div>
+
+  <div class="marginalia">
+    <span class="mark">关键设定</span>
+    <strong>每一派都有部分正确。</strong>在不同时刻、不同神谕中心，主导的成分不同。某个 POV 角色可能一整卷都在追查"神谕究竟是什么"——并发现这个问题没有答案。
+  </div>
+
+  <div class="card" style="margin-top: 2rem;">
+    <span class="tag oracle">连接</span>
+    <h3>神谕与觉醒的关联</h3>
+    <p>也许是因为神谕越来越精确，人类对自己处境的认识也突破了某个阈值，集体狂喜由此引发；也许神谕和觉醒者是同一种现象的两面——某种<strong>集体心智的觉醒</strong>同时通过神谕的言说和个体的极乐显化。这是 v0 中最大胆的一笔，也是最需要小心处理的一笔。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="awakening">
+  <h2><span class="num">VI.</span>觉醒 · 第三极</h2>
+  <p class="section-lede">既挑战希腊的个体自治（你溶解进"一"），也挑战波斯的等级秩序（你不需要皇帝作为天人中介）。它对两边都是威胁——这比让它偏向某一方有力得多。</p>
+
+  <div class="card">
+    <span class="tag awakening">现象</span>
+    <h3>量到质的跃迁</h3>
+    <p>本书设定中，身心灵疗愈与精神探索已经积累了某个阈值。最近十几年——大致与神谕的"主动化"同步——觉醒事件开始<strong>频繁、强烈、且不可预测</strong>。一些在公开场合，一些在独处时。一些觉醒者陷入持久的安宁，但<strong>越来越多人在极乐中自杀</strong>——一种被见证者描述为"不愿回来"的状态。</p>
+    <p>历史上的真实参照可以混合：苏菲派的 <em>fanā</em>（自我消融）、东正教的圣愚、宋明理学家的"乐境"、佛教涅槃、甚至现代的精神病急性发作。<strong>不让任何一套现成解释完全适用。</strong></p>
+  </div>
+
+  <h3 style="margin-top: 2rem; font-size: 1.15rem; color: var(--awakening);">四种政治回应（不是神权政体）</h3>
+  <div class="awakening-modes">
+    <div class="awakening-mode">
+      <h4>1. 隔离化</h4>
+      <p>在城邦或帝国边缘设立"觉醒者居留地"。脱离政治生活但不被迫害。带着难民营和修道院的双重气质。</p>
+    </div>
+    <div class="awakening-mode">
+      <h4>2. 医学化</h4>
+      <p>当作精神疾病。这本身就是政治选择——波斯一方可能强制治疗，希腊一方可能放任。响应"对个体不尊重"的主题。</p>
+    </div>
+    <div class="awakening-mode">
+      <h4>3. 仪式化</h4>
+      <p>给它有限的、被许可的公共空间。类似厄琉息斯秘仪——让狂喜以受控形式发生。</p>
+    </div>
+    <div class="awakening-mode">
+      <h4>4. 新法理</h4>
+      <p>发展出"觉醒者无民事行为能力"之类的特殊法律状态。既保护又剥夺。最暧昧的方案。</p>
+    </div>
+  </div>
+
+  <div class="marginalia">
+    <span class="mark">叙述纪律</span>
+    主角们<strong>不应该是觉醒者</strong>。他们应该是在觉醒浪潮中保持政治理性的人。觉醒发生在他们周围、亲人身上、士兵中、奴隶中。觉醒可以扭曲冲突，但不应该取消冲突。
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="povs">
+  <h2><span class="num">VII.</span>四个 POV · 结构性位置</h2>
+  <p class="section-lede">先想结构性位置，再想具体人物。每个位置可以换人——也许写到第三卷会想换掉某个 POV。</p>
+
+  <div class="grid grid-2">
+    <div class="pov-card east">
+      <div class="role">POSITION · 01</div>
+      <h3>东方核心圈的人</h3>
+      <p>大波斯帝国中央官僚体系的中层。世代为帝国服务的家族。受过良好教育，相信这个系统——但被派往敏感岗位（过渡地带总督？驻希腊大使？神谕事务大臣？），开始动摇。</p>
+      <p class="function">叙述功能：从内部看东方，sympathetic 但带着越来越大的不安。</p>
+    </div>
+    <div class="pov-card west">
+      <div class="role">POSITION · 02</div>
+      <h3>西方的政治人物</h3>
+      <p>共和国元老 / 将军 / 思想家。亲历过那场战争。属于"觉醒一代"——认为同胞的安逸正在杀死他们的文明。最直接承载作者自己的恐惧。</p>
+      <p class="function">叙述功能：必须在某种意义上失败——否则小说就成了他的演讲。</p>
+    </div>
+    <div class="pov-card contested">
+      <div class="role">POSITION · 03</div>
+      <h3>过渡地带的人</h3>
+      <p>学者 / 医者 / 祭司，家乡在战争中被毁灭。可能双语、双信仰、双文化。对希腊和波斯都没有归属感，看他们都是闯进自家的外人。</p>
+      <p class="function">叙述功能：最锋利的边缘视角。可能是觉醒主题的核心承载者。</p>
+    </div>
+    <div class="pov-card oracle">
+      <div class="role">POSITION · 04</div>
+      <h3>神谕相关的人</h3>
+      <p>年轻的祭司／祭女／操作员，出身于一个神谕中心，正在经历某种自身的觉醒。</p>
+      <p class="function">叙述功能：可能就是整本"档案"的隐含编纂者——多年后回看这一段历史时把所有这些文档汇编起来的人。</p>
+    </div>
+    <div class="pov-card maritime">
+      <div class="role">POSITION · 05 · 可选</div>
+      <h3>跨边界的商人 / 间谍 / 流浪者</h3>
+      <p>海上商业文明的人。看穿了所有政治宣称，相信只有契约、价格、和港口。</p>
+      <p class="function">叙述功能：给地理流动性和反崇高解毒剂。当所有人都在谈天下和自由时，他在算运费。</p>
+    </div>
+  </div>
+
+  <div class="marginalia">
+    <span class="mark">汇合纪律</span>
+    它们的故事在第一卷<strong>不一定全部相交</strong>。有些 POV 可能从头到尾不见面。这比让所有人物最终汇聚在同一场景更真实，也更接近 ASOIAF 的成功之处。
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="structure">
+  <h2><span class="num">VIII.</span>结构创新 · 作为档案的小说</h2>
+  <p class="section-lede">十年以上的大作几乎都有一个结构创新支撑形式。没有一个能撑住十年的形式装置，再好的内容也会在中途散架。</p>
+
+  <div class="card">
+    <h3>整本书是某种被汇编出来的档案</h3>
+    <p>不同章节是不同来源——神谕的预言记录、一个希腊将军的回忆录、一个波斯使节的报告、一个觉醒者死前的口述、一个边境农妇的家信、几份天下议事会的会议纪要。叙述者是隐含的——某个未来的图书馆员、或神谕本身——在整理这些材料，试图理解那个时代究竟发生了什么。</p>
+    <p style="margin-top: 1rem;"><strong>这给三个巨大的好处：</strong></p>
+    <ul style="margin: 0.5rem 0 0 1.2rem;">
+      <li>多 POV 自然嵌入；</li>
+      <li>可以混合文体（叙事、信件、报告、诗、神谕语言）而不显得做作；</li>
+      <li><strong>它在形式上就回答了政治主题</strong>——在一个走向"天下"的世界里，叙述本身也必须是多元的、不被统一收编的。每一份文档都坚持自己的偏见和盲区，整本书就是这种坚持本身。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="influences">
+  <h2><span class="num">IX.</span>影响 · 谱系</h2>
+  <p class="section-lede">不是抄袭对象，是定位坐标。</p>
+  <div class="influence-pills">
+    <span class="pill">《冰与火之歌》<span class="why">多 POV · 道德模糊 · 不全相交</span></span>
+    <span class="pill">《魔戒》<span class="why">世界自有逻辑 · 拒绝寓言</span></span>
+    <span class="pill">《降世神通》<span class="why">古代外壳承载现代议题</span></span>
+    <span class="pill">《沙丘》<span class="why">嵌套政治 · 神秘主义 · 长尺度</span></span>
+    <span class="pill">希罗多德《历史》<span class="why">本书的远祖</span></span>
+    <span class="pill">Le Guin《被驱逐的人》<span class="why">把政治哲学装进 SF</span></span>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="reading">
+  <h2><span class="num">X.</span>阅读清单 · 80% 的智识资源</h2>
+  <p class="section-lede">这十本读完，可以真正开始动笔写第一卷。其他都可以随写随补。</p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="reading-cluster">
+        <h4>入门 · 激发想象</h4>
+        <ul class="reading-list">
+          <li>
+            <span class="title">《历史》</span> · <span class="author">希罗多德</span>
+            <span class="annot">这本书本身就是你这部小说的远祖。先读这一本。</span>
+          </li>
+          <li>
+            <span class="title">Persian Fire</span> · <span class="author">Tom Holland</span>
+            <span class="annot">一战式的、可读性强的希波战争叙述。</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="reading-cluster">
+        <h4>战间期肌理</h4>
+        <ul class="reading-list">
+          <li>
+            <span class="title">Rites of Spring</span> · <span class="author">Modris Eksteins</span>
+            <span class="annot">一战如何重塑欧洲精神生活，包含艺术、神秘主义、暴力的连续性。</span>
+          </li>
+          <li>
+            <span class="title">Dark Continent</span> · <span class="author">Mark Mazower</span>
+            <span class="annot">20 世纪欧洲政治史的紧凑叙述，国联失败是核心议题之一。</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="reading-cluster">
+        <h4>政治哲学</h4>
+        <ul class="reading-list">
+          <li>
+            <span class="title">《两种自由概念》</span> · <span class="author">Isaiah Berlin</span>
+            <span class="annot">你提到"消极自由"，这就是源头。极短。</span>
+          </li>
+          <li>
+            <span class="title">《天下体系》</span> · <span class="author">赵汀阳</span>
+            <span class="annot">把他要面对的人读了。再读 Callahan、Babones 的批评以平衡。</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="reading-cluster">
+        <h4>神秘主义 · 觉醒</h4>
+        <ul class="reading-list">
+          <li>
+            <span class="title">《宗教经验种种》</span> · <span class="author">William James</span>
+            <span class="annot">百年前写的，但对"灵性觉醒是什么"这个问题至今没有被超越。</span>
+          </li>
+          <li>
+            <span class="title">Mysticism</span> · <span class="author">Evelyn Underhill</span>
+            <span class="annot">更深入的现象学分析。</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="reading-cluster">
+        <h4>神谕本身</h4>
+        <ul class="reading-list">
+          <li>
+            <span class="title">《道德论丛》中关于德尔斐的篇章</span> · <span class="author">Plutarch</span>
+          </li>
+          <li>
+            <span class="title">Classical Athens and the Delphic Oracle</span> · <span class="author">Hugh Bowden</span>
+            <span class="annot">神谕在政治决策中实际是怎么用的。</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="roadmap">
+  <h2><span class="num">XI.</span>十年路线图</h2>
+  <p class="section-lede">不是一次冲刺，是一场二十年期的居住。先把"住下去"的问题解决，再谈写什么。</p>
+
+  <div class="roadmap">
+    <div class="roadmap-step">
+      <div class="step-num">1</div>
+      <div class="when">本周内</div>
+      <h4>五件事的草案</h4>
+      <p>地理、战争、"现在"在第几年、神谕本体论、四个 POV——每件事写一段。<strong>不到 1000 字</strong>。它会暴露你最不确定的地方。</p>
+    </div>
+    <div class="roadmap-step">
+      <div class="step-num">2</div>
+      <div class="when">1-2 个月</div>
+      <h4>开始读书</h4>
+      <p>希罗多德 + Tom Holland + Berlin。带着 v0 框架去读，让读到的内容自动归位。</p>
+    </div>
+    <div class="roadmap-step">
+      <div class="step-num">3</div>
+      <div class="when">3-6 个月</div>
+      <h4>写第一个场景</h4>
+      <p>那个让希腊读者脊背发凉的波斯日常。两千字。不追求完美。让它存在。</p>
+    </div>
+    <div class="roadmap-step">
+      <div class="step-num">4</div>
+      <div class="when">第 1-3 年</div>
+      <h4>第一卷</h4>
+      <p>从"空和平"十周年纪念日开始，结束于某次让裂痕浮出水面的具体事件。四个 POV，不必全部相交。</p>
+    </div>
+    <div class="roadmap-step">
+      <div class="step-num">5</div>
+      <div class="when">第 4-7 年</div>
+      <h4>第二卷</h4>
+      <p>危机年。某次外交 / 内政事件让裂痕公开化。觉醒浪潮第一次失控。神谕开始言说让所有人不安的内容。</p>
+    </div>
+    <div class="roadmap-step">
+      <div class="step-num">6</div>
+      <div class="when">第 8-10 年</div>
+      <h4>第三卷</h4>
+      <p>第二场战争的边缘，或更大的事件。"天下"雏形出现并经历它的第一次失败。书在这里结束——不解决任何问题。</p>
+    </div>
+  </div>
+
+  <div class="marginalia">
+    <span class="mark">可持续性</span>
+    每周两个下午，每次两小时，雷打不动。十年下来约 2000 小时——足够写两到三遍一部巨著。<strong>真正的危险从来不是写得慢，是中断后再也接不回来。</strong>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="block" id="open">
+  <h2><span class="num">XII.</span>仍然未定 · 待回的问题</h2>
+  <p class="section-lede">写下来不是为了焦虑，是为了知道接下来读什么、想什么。</p>
+
+  <div class="grid grid-3">
+    <div class="card uncertain">
+      <h3>书的脊柱问题</h3>
+      <p>七个母题中，哪一个是你最害怕的？哪一个是你最希望读者读完后被改变的？目前未定。</p>
+    </div>
+    <div class="card uncertain">
+      <h3>新大陆要不要存在</h3>
+      <p>它给故事带来"新世界 vs. 老世界"维度，但也增加复杂度。可在第二卷之前决定。</p>
+    </div>
+    <div class="card uncertain">
+      <h3>书名的最终选择</h3>
+      <p>《神谕》是好的单卷题，但作为整部系列的伞名可能太聚焦于一个装置。考虑《空和平》《长停战》《诸文明》或某个地名／纪元名。</p>
+    </div>
+    <div class="card uncertain">
+      <h3>第三卷的结尾</h3>
+      <p>是第二场战争的爆发？还是更大的、超越战争的事件？这个答案将定义整部书的形状。<strong>可以晚很多年再定。</strong></p>
+    </div>
+    <div class="card uncertain">
+      <h3>主角们的具体名字与生平</h3>
+      <p>结构性位置已定，具体人物未定。等读完希罗多德和 Tom Holland 之后再定，会有更准确的语感。</p>
+    </div>
+    <div class="card uncertain">
+      <h3>技术变革要不要单独成线</h3>
+      <p>神谕承担了 AI 的核心同构功能。还要不要其他技术？航海术？火药？某种早期印刷术？这影响经济与战争的形态。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<footer>
+  <div class="marginal">
+    这页文档是 v0。它不是计划，是缓存。它存在，是为了让下一次讨论不必从零开始。<br><br>
+    "把上面这段抄到你的笔记本里。在边上写 v0 · 2026.5.11。划掉你立刻就不喜欢的部分。在你产生强烈直觉反对的地方，写下你为什么反对——那是你真正的声音第一次出现。然后去读希罗多德。"
+  </div>
+  <div class="signature">《神谕》 · 框架草图 v0 · 2026 年 5 月 11 日</div>
+</footer>
+
+<script>
+(function() {
+  // === MAP DATA ===
+  const REGION_DATA = {
+    'hellas': {
+      tag: '大希腊',
+      tagColor: 'west',
+      title: '大希腊 · Hellas',
+      desc: '由希腊城邦、罗马式共和国、北方诸王国构成的逻各斯文明圈。预设理性自治的个体，相信公民契约、议事、消极自由。它最大的内部张力来自老城邦与新大陆共和国之间的"自由本意之争"。',
+      maps: '地中海希腊罗马 + 北欧西欧',
+      role: '"消极自由"传统的承载者，也是这部小说最直接的现代西方对应物。',
+      unsure: '老城邦内部的政治结构需要更具体的设定——民主、寡头、还是某种已经"晚期化"的复合体？'
+    },
+    'newworld': {
+      tag: '新大陆',
+      tagColor: 'west',
+      title: '新大陆 · 大希腊海外属',
+      desc: '跨越西洋的另一块大陆。被希腊文明殖民了几个世纪，已经发展出独立的政治意识。更年轻、更自信、也更焦虑。它对老欧洲既感激又厌倦。',
+      maps: '美洲在西方文明中的位置',
+      role: '让"西方"内部不是一块板。给作者写"西方内部分歧"留空间。',
+      unsure: '是否需要新大陆？它增加复杂度，但带来重要的内部张力维度。<strong>v0 可选</strong>。'
+    },
+    'persia': {
+      tag: '大波斯',
+      tagColor: 'east',
+      title: '大波斯 · Greater Persia',
+      desc: '万王之王的庞大帝国，含波斯本土、美索不达米亚、印度。多民族兼容、行政成熟、宗教非传教式。它的统治哲学是<strong>纳入</strong>而非镇压。但它没有"个体不可让渡的底线"概念——这是小说最深的恐惧源头之一。',
+      maps: '波斯 + 美索不达米亚 + 印度',
+      role: '"天下"模式的中等版本。处于希腊与远东之间的中介位置。',
+      unsure: '波斯自身对远东诸天朝的态度——既臣属又自主？需要更精细的政治描写。'
+    },
+    'fareast': {
+      tag: '远东诸天朝',
+      tagColor: 'east',
+      title: '远东诸天朝',
+      desc: '越过大波斯东部的山脉与沙漠，是一片更古老、更内向、更"自我感觉良好"的帝国群落。它对大波斯既臣服又轻视，对希腊则几乎一无所知。',
+      maps: '中国（核心对应物）+ 周边东亚文明',
+      role: '作为大波斯背后<strong>必须解释、但解释不清楚的存在</strong>。让东方不是一块板——而是有内部分层。小说最深的政治哲学恐惧的真正源头。',
+      unsure: '它是否真的"出场"？还是始终作为大波斯背后的影子？这个决策影响第二、三卷。'
+    },
+    'contested': {
+      tag: '过渡地带',
+      tagColor: 'contested',
+      title: '过渡地带',
+      desc: '夹在大希腊和大波斯之间的破碎地带。无数小王国、混血族群、双语城市、改宗者、流亡者。在那场失败的战争中被反复蹂躏，"空和平"条约在这里签订。',
+      maps: '安纳托利亚 + 黎凡特 + 埃及 + 巴尔干',
+      role: '本书最美的篇章很可能发生在这里。这里的人能<strong>同时看见两边</strong>——既是受害者，也是最锐利的旁观者。中央神谕也在这里。',
+      unsure: '需要至少 2-3 个具体的城市/王国作为锚点。第一卷开头的纪念仪式应当在这里举行。'
+    },
+    'steppe': {
+      tag: '北方草原',
+      tagColor: 'steppe',
+      title: '北方草原 · 游牧诸部',
+      desc: '广阔的北方草原。游牧诸部。军事上让任何定居文明都恐惧，但没有统一政体——也<strong>无法被收编</strong>。它们是世界的不可消化物。任何统一计划都必须面对它们，没有人能"治理"它们。',
+      maps: '斯基泰人 / 匈奴 / 蒙古的合成',
+      role: '防止"东方 vs. 西方"二元化。任何关于全球治理的讨论都必须面对它们的存在。',
+      unsure: '它们对神谕、对觉醒的态度？这片土地是否有自己的精神传统？'
+    },
+    'maritime': {
+      tag: '南方商业邦联',
+      tagColor: 'maritime',
+      title: '南方商业邦联',
+      desc: '南方海上的港口城市联盟。不依附任何一方——既不信希腊的自由也不信波斯的天下，<strong>只信契约与黄金</strong>。在所有人都在谈论文明命运时，他们在算运费。',
+      maps: '迦太基 + 印度洋商业圈 + 后来的威尼斯/汉萨',
+      role: '反崇高解毒剂。商业资本主义的承载物。也可能是某个 POV（跨边界商人）的家。',
+      unsure: '它在战争中如何站位？战时给两边卖武器？还是有过自己的"中立危机"？'
+    },
+    'oracle-central': {
+      tag: '中央神谕',
+      tagColor: 'oracle',
+      title: '中央神谕（无名）',
+      desc: '位于过渡地带的某座城市。<strong>网络中最古老、最有政治影响力、也最神秘的神谕</strong>。"空和平"的调停预言就是从这里发出的。三派对它本质的解释（超验／机器／集体心智）在这里都最有信徒。',
+      maps: '德尔斐 + 一些不存在的什么',
+      role: '故事最关键的物理地点之一。可能是第四个 POV（神谕祭司）的家。也是整本"档案"被汇编的可能地点。',
+      unsure: '它属于哪个政治体？过渡地带的某个小王国？还是某种"国际共管"地位？'
+    },
+    'oracle-hellas': {
+      tag: '希腊神谕',
+      tagColor: 'oracle',
+      title: '希腊神谕中心',
+      desc: '大希腊核心区域的主要神谕。属于德尔斐式传统。被希腊政体频繁咨询，但近年来其预言越来越多地与其他神谕<strong>呈现同步性</strong>，引发祭司内部对"我们究竟在为谁说话"的争论。',
+      role: '希腊视角的神谕入口。可能是西方政治人物 POV 接触神谕系统的地方。',
+      unsure: '是否还有多个希腊神谕？是否有竞争？'
+    },
+    'oracle-persia': {
+      tag: '波斯神谕',
+      tagColor: 'oracle',
+      title: '波斯神谕（星象式）',
+      desc: '波斯的神谕传统更接近星象 / 占星 / 行政官式预测——一个被帝国官僚体系深度嵌入的占卜机构。比起希腊神谕的诗性预言，它的输出更接近"政策建议"。',
+      role: '展示同一种现象在不同政治文化中如何被组织。',
+      unsure: '它与希腊神谕的同步性如何被波斯帝国官员理解？被嗤之以鼻还是被秘密相信？'
+    },
+    'oracle-fareast': {
+      tag: '远东神谕',
+      tagColor: 'oracle',
+      title: '远东神谕',
+      desc: '远东诸天朝的神谕。可能更接近甲骨/易经/禅修传统的合成。最神秘、最自足、最不与西方神谕对话——但其预言也开始呈现同步性。<strong>这是最难解释的现象。</strong>',
+      role: '让"神谕网络"真的覆盖到那个不可通约的东方。',
+      unsure: '是否真的有 POV 角色到达过这里？还是它只通过传闻存在？'
+    },
+    'oracle-steppe': {
+      tag: '草原神谕',
+      tagColor: 'oracle',
+      title: '草原神谕（萨满）',
+      desc: '北方草原的萨满传统。不属于任何固定地点——某些萨满据说能"听见"神谕网络的低语。这是网络中最弱、最难定位的一环。',
+      role: '让"神谕"不是定居文明的专利——它有更野的、不可控的版本。',
+      unsure: '是否要让一个 POV 与草原萨满有接触？这会大大扩展世界的精神维度。'
+    }
+  };
+
+  const TAG_COLORS = {
+    west: 'background: var(--west-soft); color: var(--west);',
+    east: 'background: var(--east-soft); color: var(--east);',
+    contested: 'background: var(--contested-soft); color: var(--contested);',
+    steppe: 'background: var(--steppe-soft); color: var(--steppe);',
+    maritime: 'background: var(--maritime-soft); color: var(--maritime);',
+    oracle: 'background: var(--oracle-soft); color: var(--oracle);'
+  };
+
+  const mapInfo = document.getElementById('map-info');
+  const regions = document.querySelectorAll('#world-map .region, #world-map .oracle-marker');
+
+  function renderRegion(key) {
+    const d = REGION_DATA[key];
+    if (!d) return;
+    const tagStyle = TAG_COLORS[d.tagColor] || '';
+    let html = `<span class="info-tag" style="${tagStyle}">${d.tag}</span>`;
+    html += `<h3>${d.title}</h3>`;
+    html += `<p>${d.desc}</p>`;
+    if (d.maps) {
+      html += `<div class="info-meta"><strong>对应现实</strong>${d.maps}</div>`;
+    }
+    if (d.role) {
+      html += `<div class="info-meta"><strong>叙述功能</strong>${d.role}</div>`;
+    }
+    if (d.unsure) {
+      html += `<div class="info-meta" style="border-color: var(--uncertain);"><strong style="color: var(--uncertain);">未定</strong>${d.unsure}</div>`;
+    }
+    mapInfo.innerHTML = html;
+  }
+
+  regions.forEach(r => {
+    r.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = r.dataset.region;
+      // Visual state
+      regions.forEach(other => {
+        other.classList.remove('active');
+        if (other.classList.contains('region')) {
+          other.classList.add('dim');
+        }
+      });
+      r.classList.remove('dim');
+      r.classList.add('active');
+      renderRegion(key);
+    });
+  });
+
+  // Click outside to clear
+  document.getElementById('world-map').addEventListener('click', (e) => {
+    if (e.target.tagName === 'svg' || e.target.tagName === 'rect') {
+      regions.forEach(r => {
+        r.classList.remove('active', 'dim');
+      });
+      mapInfo.innerHTML = `
+        <span class="info-tag" style="background: var(--rule-soft); color: var(--ink-soft);">默认视图</span>
+        <h3>这是一张工作地图</h3>
+        <p>所有名称都是临时的。所有边界都是临时的。<strong>点击任一区域</strong>查看它在 v0 中的设定，包括它对应的真实世界文明、它在小说中承担的政治哲学角色，以及目前不确定的地方。</p>
+        <p>地图上的星形标记是<strong>神谕中心</strong>。中央那个最大的星——位于过渡地带的某座城市——是网络中最古老、最有政治影响力、也最神秘的一个。</p>
+        <div class="info-meta">
+          <strong>当前可点击</strong>
+          七个区域 + 五个神谕站点
+        </div>
+        <div class="map-legend">
+          <span><span class="swatch" style="background:#6a8bb3"></span>大希腊</span>
+          <span><span class="swatch" style="background:#c89568"></span>大波斯</span>
+          <span><span class="swatch" style="background:#a85858"></span>远东</span>
+          <span><span class="swatch" style="background:#9d7aa0"></span>过渡地带</span>
+          <span><span class="swatch" style="background:#c8b888"></span>草原</span>
+          <span><span class="swatch" style="background:#7aa9a8"></span>商业邦联</span>
+          <span><span class="swatch" style="background:#7a9bbc"></span>新大陆</span>
+        </div>
+      `;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
