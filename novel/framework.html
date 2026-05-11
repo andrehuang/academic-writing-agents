@@ -276,11 +276,12 @@
     .map-wrap { grid-template-columns: 1fr; }
   }
   .map-svg-wrap {
-    background: #efe5cf;
-    border: 1px solid var(--rule);
-    border-radius: 4px;
+    background: #c4a878;
+    border: 1px solid #3a2818;
+    border-radius: 2px;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 0 0 60px rgba(60,40,20,0.25);
   }
   .map-svg-wrap svg {
     width: 100%;
@@ -289,32 +290,73 @@
   }
   .map-svg-wrap .map-hint {
     position: absolute;
-    bottom: 0.5rem;
-    right: 0.8rem;
+    bottom: 0.6rem;
+    right: 0.9rem;
     font-size: 0.7rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.1em;
+    color: #3a2818;
+    letter-spacing: 0.15em;
     font-style: italic;
+    background: rgba(232,212,168,0.7);
+    padding: 0.2rem 0.6rem;
+    border: 1px solid rgba(58,40,24,0.3);
   }
-  .region { cursor: pointer; transition: opacity 0.25s, filter 0.25s; }
-  .region:hover { filter: brightness(1.08); }
-  .region.dim { opacity: 0.35; }
-  .region.active { filter: brightness(1.12) drop-shadow(0 0 6px rgba(0,0,0,0.2)); }
-  .map-label {
-    font-size: 12px;
-    fill: var(--ink);
+  .region { cursor: pointer; transition: opacity 0.3s, filter 0.3s; }
+  .region:hover { filter: brightness(1.06) drop-shadow(0 0 4px rgba(168,96,72,0.3)); }
+  .region.dim { opacity: 0.42; }
+  .region.active { filter: drop-shadow(0 0 10px rgba(168,72,40,0.7)) brightness(1.04); }
+
+  .map-label-major {
+    font-size: 16px;
+    fill: #2a1f10;
+    pointer-events: none;
+    font-family: Georgia, "Songti SC", "Noto Serif SC", serif;
+    letter-spacing: 0.42em;
+    font-style: italic;
+    font-weight: 600;
+    paint-order: stroke fill;
+    stroke: rgba(232,212,168,0.85);
+    stroke-width: 3.5px;
+    stroke-linejoin: round;
+  }
+  .map-label-large {
+    font-size: 13px;
+    fill: #2a1f10;
     pointer-events: none;
     font-family: Georgia, serif;
-    letter-spacing: 0.05em;
-  }
-  .map-label-sub {
-    font-size: 9px;
-    fill: var(--ink-soft);
-    pointer-events: none;
+    letter-spacing: 0.22em;
     font-style: italic;
+    font-weight: 500;
+    paint-order: stroke fill;
+    stroke: rgba(232,212,168,0.8);
+    stroke-width: 2.8px;
+    stroke-linejoin: round;
   }
-  .oracle-marker { cursor: pointer; }
-  .oracle-marker:hover { transform-origin: center; }
+  .map-label-mid {
+    font-size: 11px;
+    fill: #2a1f10;
+    pointer-events: none;
+    font-family: Georgia, serif;
+    letter-spacing: 0.14em;
+    font-style: italic;
+    paint-order: stroke fill;
+    stroke: rgba(232,212,168,0.7);
+    stroke-width: 2.2px;
+    stroke-linejoin: round;
+  }
+  .map-label-small {
+    font-size: 9.5px;
+    fill: #2a1f10;
+    pointer-events: none;
+    font-family: Georgia, serif;
+    font-style: italic;
+    paint-order: stroke fill;
+    stroke: rgba(232,212,168,0.65);
+    stroke-width: 1.8px;
+    stroke-linejoin: round;
+  }
+  .oracle-marker { cursor: pointer; transition: filter 0.25s; }
+  .oracle-marker:hover { filter: drop-shadow(0 0 6px rgba(255,220,140,0.9)); }
+  .oracle-marker.active { filter: drop-shadow(0 0 10px rgba(255,180,80,1)); }
 
   .map-info {
     background: var(--bg-sunken);
@@ -781,111 +823,438 @@
 
   <div class="map-wrap">
     <div class="map-svg-wrap">
-      <svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" id="world-map" role="img" aria-label="架空世界地图">
-        <!-- Background sea -->
-        <rect width="1000" height="600" fill="#dcd0b4"/>
+      <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" id="world-map" role="img" aria-label="架空世界地图">
+        <defs>
+          <!-- Paper grain filter -->
+          <filter id="paper-grain" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7"/>
+            <feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.25  0 0 0 0 0.12  0 0 0 0.35 0"/>
+          </filter>
+          <!-- Subtle rough-edge filter for coastlines -->
+          <filter id="coast-rough" x="-3%" y="-3%" width="106%" height="106%">
+            <feTurbulence baseFrequency="0.04" numOctaves="2" seed="11"/>
+            <feDisplacementMap in="SourceGraphic" scale="2.5"/>
+          </filter>
+          <!-- Sea wave pattern -->
+          <pattern id="sea-waves" x="0" y="0" width="64" height="32" patternUnits="userSpaceOnUse">
+            <path d="M 0 16 Q 16 9 32 16 T 64 16" stroke="#5a6660" stroke-width="0.45" fill="none" opacity="0.35"/>
+            <path d="M 0 26 Q 16 19 32 26 T 64 26" stroke="#5a6660" stroke-width="0.4" fill="none" opacity="0.22"/>
+          </pattern>
+          <!-- Stipple pattern for sea darker areas -->
+          <pattern id="sea-stipple" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="3" cy="4" r="0.4" fill="#3a4844" opacity="0.4"/>
+            <circle cx="13" cy="9" r="0.35" fill="#3a4844" opacity="0.4"/>
+            <circle cx="7" cy="15" r="0.4" fill="#3a4844" opacity="0.4"/>
+            <circle cx="17" cy="17" r="0.3" fill="#3a4844" opacity="0.4"/>
+          </pattern>
+          <!-- Land grain -->
+          <pattern id="land-grain" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+            <circle cx="5" cy="5" r="0.5" fill="#3a2818" opacity="0.18"/>
+            <circle cx="15" cy="12" r="0.4" fill="#3a2818" opacity="0.18"/>
+            <circle cx="25" cy="8" r="0.5" fill="#3a2818" opacity="0.18"/>
+            <circle cx="35" cy="20" r="0.4" fill="#3a2818" opacity="0.18"/>
+            <circle cx="8" cy="28" r="0.4" fill="#3a2818" opacity="0.18"/>
+            <circle cx="22" cy="35" r="0.5" fill="#3a2818" opacity="0.18"/>
+            <circle cx="33" cy="32" r="0.4" fill="#3a2818" opacity="0.18"/>
+          </pattern>
 
-        <!-- Subtle latitude lines -->
-        <g stroke="#c4b896" stroke-width="0.5" stroke-dasharray="2,4" opacity="0.5">
-          <line x1="0" y1="100" x2="1000" y2="100"/>
-          <line x1="0" y1="200" x2="1000" y2="200"/>
-          <line x1="0" y1="300" x2="1000" y2="300"/>
-          <line x1="0" y1="400" x2="1000" y2="400"/>
-          <line x1="0" y1="500" x2="1000" y2="500"/>
+          <!-- Mountain pictogram -->
+          <symbol id="mtn" viewBox="0 0 24 16" overflow="visible">
+            <path d="M 1 15 L 6 4 L 9.5 9 L 13.5 1.5 L 17 7 L 20 4.5 L 23 15 Z"
+                  fill="#8a7048" stroke="#2a1f10" stroke-width="0.9" stroke-linejoin="round"/>
+            <path d="M 6 4 L 7 8 L 8.5 5.5" stroke="#f5e8c8" stroke-width="0.6" fill="none" opacity="0.7"/>
+            <path d="M 13.5 1.5 L 14.5 6 L 16 3.5" stroke="#f5e8c8" stroke-width="0.6" fill="none" opacity="0.7"/>
+          </symbol>
+          <!-- Small mountain -->
+          <symbol id="mtn-s" viewBox="0 0 16 11" overflow="visible">
+            <path d="M 1 10 L 5 3 L 8 7 L 11 1.5 L 15 10 Z"
+                  fill="#8a7048" stroke="#2a1f10" stroke-width="0.7" stroke-linejoin="round"/>
+          </symbol>
+          <!-- Hill -->
+          <symbol id="hill" viewBox="0 0 18 8" overflow="visible">
+            <path d="M 1 7 Q 5 1 9 4 Q 13 1 17 7 Z"
+                  fill="#a8895a" stroke="#3a2818" stroke-width="0.6"/>
+          </symbol>
+          <!-- Tree -->
+          <symbol id="tree" viewBox="0 0 8 11" overflow="visible">
+            <path d="M 4 10.5 L 4 8 M 1 8.5 L 4 2 L 7 8.5 Z"
+                  fill="#4a5e3a" stroke="#1f2a14" stroke-width="0.45" stroke-linejoin="round"/>
+          </symbol>
+          <!-- Dune (for desert/steppe) -->
+          <symbol id="dune" viewBox="0 0 22 6" overflow="visible">
+            <path d="M 1 5 Q 6 1 11 4 Q 16 1 21 5" stroke="#7a5e38" stroke-width="0.7" fill="none" opacity="0.7"/>
+          </symbol>
+          <!-- City marker -->
+          <symbol id="city" viewBox="0 0 10 10" overflow="visible">
+            <circle cx="5" cy="5" r="3.5" fill="#f5e8c8" stroke="#2a1f10" stroke-width="1.1"/>
+            <circle cx="5" cy="5" r="1.5" fill="#2a1f10"/>
+          </symbol>
+          <!-- Capital marker -->
+          <symbol id="capital" viewBox="0 0 14 14" overflow="visible">
+            <circle cx="7" cy="7" r="5.5" fill="#f5e8c8" stroke="#2a1f10" stroke-width="1.4"/>
+            <circle cx="7" cy="7" r="3" fill="#a8482a"/>
+            <circle cx="7" cy="7" r="1.2" fill="#2a1f10"/>
+          </symbol>
+          <!-- Oracle star -->
+          <symbol id="oracle-star" viewBox="0 0 24 24" overflow="visible">
+            <polygon points="12,2 14.2,9 21.5,9 15.6,13.3 17.8,20.5 12,16.2 6.2,20.5 8.4,13.3 2.5,9 9.8,9"
+                     fill="#f8e8c0" stroke="#2a1f10" stroke-width="1.4"/>
+            <circle cx="12" cy="12" r="2" fill="#a8482a"/>
+          </symbol>
+          <!-- Ship -->
+          <symbol id="ship" viewBox="0 0 24 16" overflow="visible">
+            <path d="M 2 12 L 22 12 L 19 15 L 5 15 Z" fill="#5a4028" stroke="#2a1f10" stroke-width="0.6"/>
+            <line x1="12" y1="12" x2="12" y2="2" stroke="#2a1f10" stroke-width="0.7"/>
+            <path d="M 12 3 L 19 8 L 12 8 Z" fill="#f5e8c8" stroke="#2a1f10" stroke-width="0.5"/>
+            <path d="M 12 3 L 5 8 L 12 8 Z" fill="#e8d4a8" stroke="#2a1f10" stroke-width="0.5"/>
+          </symbol>
+          <!-- Sea monster (subtle, for fantasy flavor) -->
+          <symbol id="sea-beast" viewBox="0 0 32 14" overflow="visible">
+            <path d="M 2 10 Q 5 5 9 9 Q 13 3 17 8 Q 21 4 25 8 Q 28 11 30 9"
+                  stroke="#3a2818" stroke-width="0.7" fill="none" opacity="0.65"/>
+            <circle cx="29" cy="8" r="0.6" fill="#3a2818" opacity="0.7"/>
+          </symbol>
+        </defs>
+
+        <!-- ===== SEA (background) ===== -->
+        <rect width="1200" height="800" fill="#9aa89e"/>
+        <rect width="1200" height="800" fill="url(#sea-waves)"/>
+        <rect width="1200" height="800" fill="url(#sea-stipple)"/>
+        <!-- Warm tinting overlay across whole map -->
+        <rect width="1200" height="800" fill="#c9a878" opacity="0.18"/>
+
+        <!-- Sea beasts and ships for flavor -->
+        <g pointer-events="none" opacity="0.85">
+          <g transform="translate(180 540)"><use href="#sea-beast" width="40" height="18"/></g>
+          <g transform="translate(900 540)"><use href="#sea-beast" width="36" height="16"/></g>
+          <g transform="translate(420 730)"><use href="#ship" width="22" height="15"/></g>
+          <g transform="translate(740 720)"><use href="#ship" width="22" height="15"/></g>
         </g>
 
-        <!-- Northern Steppe -->
-        <path class="region" data-region="steppe"
-              d="M 50 30 Q 200 60 350 50 Q 500 40 650 55 Q 800 70 960 50 L 950 150 Q 800 180 650 165 Q 500 150 350 170 Q 200 185 70 165 Z"
-              fill="#c8b888" stroke="#8a7e4a" stroke-width="1.5"/>
-        <text x="500" y="105" class="map-label" text-anchor="middle" font-size="14">北方草原</text>
-        <text x="500" y="125" class="map-label-sub" text-anchor="middle">游牧诸部 · 不臣属任何一方</text>
+        <!-- ===== LAND REGIONS ===== -->
+        <g id="regions">
+          <!-- Northern Steppe (top band, irregular hand-drawn edge) -->
+          <path class="region" data-region="steppe"
+                d="M 55 78 L 95 66 L 138 72 L 178 60 L 222 70 L 268 64 L 312 72 L 358 62 L 405 70 L 452 64 L 498 72 L 544 64 L 590 70 L 636 62 L 682 70 L 728 64 L 774 72 L 820 62 L 866 70 L 912 64 L 958 72 L 1004 62 L 1050 70 L 1098 66 L 1138 78 L 1148 108 L 1144 142 L 1138 168 L 1085 174 L 1018 178 L 952 170 L 884 176 L 818 172 L 752 178 L 686 172 L 620 178 L 554 172 L 488 178 L 422 172 L 356 176 L 290 170 L 224 176 L 158 170 L 102 162 L 62 152 L 50 122 L 54 95 Z"
+                fill="#d6c290" stroke="#2a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M 55 78 L 95 66 L 138 72 L 178 60 L 222 70 L 268 64 L 312 72 L 358 62 L 405 70 L 452 64 L 498 72 L 544 64 L 590 70 L 636 62 L 682 70 L 728 64 L 774 72 L 820 62 L 866 70 L 912 64 L 958 72 L 1004 62 L 1050 70 L 1098 66 L 1138 78 L 1148 108 L 1144 142 L 1138 168 L 1085 174 L 1018 178 L 952 170 L 884 176 L 818 172 L 752 178 L 686 172 L 620 178 L 554 172 L 488 178 L 422 172 L 356 176 L 290 170 L 224 176 L 158 170 L 102 162 L 62 152 L 50 122 L 54 95 Z"
+                fill="url(#land-grain)" pointer-events="none"/>
 
-        <!-- New Continent (far west) -->
-        <path class="region" data-region="newworld"
-              d="M 30 230 Q 80 210 130 230 Q 160 270 150 320 Q 140 380 100 410 Q 50 420 30 380 Q 20 310 30 230 Z"
-              fill="#7a9bbc" stroke="#3e5d82" stroke-width="1.5"/>
-        <text x="85" y="320" class="map-label" text-anchor="middle">新大陆</text>
-        <text x="85" y="338" class="map-label-sub" text-anchor="middle">大希腊属</text>
+          <!-- New Continent (far west) -->
+          <path class="region" data-region="newworld"
+                d="M 38 268 L 56 250 L 80 244 L 105 252 L 128 244 L 148 260 L 158 286 L 162 318 L 156 352 L 148 388 L 132 418 L 108 432 L 80 432 L 56 420 L 38 398 L 28 368 L 24 332 L 26 298 L 32 280 Z"
+                fill="#c4a878" stroke="#2a1f10" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M 38 268 L 56 250 L 80 244 L 105 252 L 128 244 L 148 260 L 158 286 L 162 318 L 156 352 L 148 388 L 132 418 L 108 432 L 80 432 L 56 420 L 38 398 L 28 368 L 24 332 L 26 298 L 32 280 Z"
+                fill="url(#land-grain)" pointer-events="none"/>
 
-        <!-- Greater Hellas core -->
-        <path class="region" data-region="hellas"
-              d="M 200 220 Q 280 200 360 215 Q 410 240 415 290 Q 410 350 380 380 Q 320 395 240 380 Q 195 360 190 300 Q 190 250 200 220 Z"
-              fill="#6a8bb3" stroke="#3e5d82" stroke-width="1.5"/>
-        <text x="295" y="295" class="map-label" text-anchor="middle" font-size="14">大 希 腊</text>
-        <text x="295" y="315" class="map-label-sub" text-anchor="middle">城邦联盟 · 共和国 · 北方诸王国</text>
+          <!-- Greater Hellas -->
+          <path class="region" data-region="hellas"
+                d="M 248 202 L 280 188 L 318 192 L 355 184 L 398 190 L 442 196 L 488 202 L 528 215 L 555 238 L 572 268 L 580 305 L 578 342 L 568 378 L 552 408 L 528 428 L 498 440 L 462 444 L 422 444 L 382 440 L 342 432 L 308 418 L 282 402 L 262 380 L 248 354 L 240 322 L 238 288 L 240 255 L 244 222 Z"
+                fill="#cbb487" stroke="#2a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M 248 202 L 280 188 L 318 192 L 355 184 L 398 190 L 442 196 L 488 202 L 528 215 L 555 238 L 572 268 L 580 305 L 578 342 L 568 378 L 552 408 L 528 428 L 498 440 L 462 444 L 422 444 L 382 440 L 342 432 L 308 418 L 282 402 L 262 380 L 248 354 L 240 322 L 238 288 L 240 255 L 244 222 Z"
+                fill="url(#land-grain)" pointer-events="none"/>
 
-        <!-- Contested Zone -->
-        <path class="region" data-region="contested"
-              d="M 415 240 Q 470 225 520 245 Q 545 280 540 330 Q 525 370 480 380 Q 430 385 415 350 Q 405 295 415 240 Z"
-              fill="#9d7aa0" stroke="#7a5582" stroke-width="1.5"/>
-        <text x="478" y="305" class="map-label" text-anchor="middle">过渡地带</text>
-        <text x="478" y="323" class="map-label-sub" text-anchor="middle">战场 · 混血 · 双语</text>
+          <!-- Contested Zone -->
+          <path class="region" data-region="contested"
+                d="M 588 208 L 612 192 L 640 188 L 666 196 L 688 212 L 702 238 L 712 270 L 714 305 L 712 342 L 704 378 L 692 408 L 674 428 L 648 440 L 622 438 L 600 425 L 588 405 L 580 378 L 576 348 L 575 312 L 578 278 L 582 244 L 586 220 Z"
+                fill="#c0a682" stroke="#2a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M 588 208 L 612 192 L 640 188 L 666 196 L 688 212 L 702 238 L 712 270 L 714 305 L 712 342 L 704 378 L 692 408 L 674 428 L 648 440 L 622 438 L 600 425 L 588 405 L 580 378 L 576 348 L 575 312 L 578 278 L 582 244 L 586 220 Z"
+                fill="url(#land-grain)" pointer-events="none"/>
 
-        <!-- Greater Persia core -->
-        <path class="region" data-region="persia"
-              d="M 545 220 Q 640 200 730 215 Q 775 240 780 290 Q 775 350 740 380 Q 660 395 580 385 Q 545 365 540 305 Q 540 250 545 220 Z"
-              fill="#c89568" stroke="#a87444" stroke-width="1.5"/>
-        <text x="660" y="295" class="map-label" text-anchor="middle" font-size="14">大 波 斯</text>
-        <text x="660" y="315" class="map-label-sub" text-anchor="middle">王中之王 · 美索不达米亚 · 印度</text>
+          <!-- Greater Persia -->
+          <path class="region" data-region="persia"
+                d="M 724 200 L 758 188 L 798 182 L 840 184 L 880 190 L 918 200 L 948 218 L 966 245 L 972 280 L 974 318 L 970 352 L 958 384 L 938 410 L 910 428 L 878 438 L 842 442 L 802 444 L 762 440 L 730 428 L 712 408 L 702 380 L 700 348 L 704 314 L 712 280 L 720 244 L 724 218 Z"
+                fill="#cbab7a" stroke="#2a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M 724 200 L 758 188 L 798 182 L 840 184 L 880 190 L 918 200 L 948 218 L 966 245 L 972 280 L 974 318 L 970 352 L 958 384 L 938 410 L 910 428 L 878 438 L 842 442 L 802 444 L 762 440 L 730 428 L 712 408 L 702 380 L 700 348 L 704 314 L 712 280 L 720 244 L 724 218 Z"
+                fill="url(#land-grain)" pointer-events="none"/>
 
-        <!-- Far East -->
-        <path class="region" data-region="fareast"
-              d="M 780 215 Q 870 195 950 215 Q 975 260 975 320 Q 970 380 940 410 Q 870 420 800 410 Q 780 380 780 320 Q 780 260 780 215 Z"
-              fill="#a85858" stroke="#7a3838" stroke-width="1.5"/>
-        <text x="875" y="305" class="map-label" text-anchor="middle">远东诸天朝</text>
-        <text x="875" y="323" class="map-label-sub" text-anchor="middle">古老 · 内向 · 自足</text>
+          <!-- Far East -->
+          <path class="region" data-region="fareast"
+                d="M 988 210 L 1020 196 L 1055 192 L 1090 198 L 1118 212 L 1140 232 L 1156 258 L 1162 290 L 1162 322 L 1156 354 L 1144 384 L 1126 408 L 1100 426 L 1068 436 L 1034 438 L 1004 432 L 982 416 L 970 390 L 964 358 L 962 324 L 966 290 L 972 258 L 980 230 L 988 210 Z"
+                fill="#c8a98c" stroke="#2a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M 988 210 L 1020 196 L 1055 192 L 1090 198 L 1118 212 L 1140 232 L 1156 258 L 1162 290 L 1162 322 L 1156 354 L 1144 384 L 1126 408 L 1100 426 L 1068 436 L 1034 438 L 1004 432 L 982 416 L 970 390 L 964 358 L 962 324 L 966 290 L 972 258 L 980 230 L 988 210 Z"
+                fill="url(#land-grain)" pointer-events="none"/>
 
-        <!-- Southern Sea / Maritime League -->
-        <path class="region" data-region="maritime"
-              d="M 80 450 Q 250 440 450 445 Q 650 450 850 445 Q 950 455 960 510 Q 940 555 850 565 Q 650 570 450 565 Q 250 560 80 555 Q 50 510 80 450 Z"
-              fill="#7aa9a8" stroke="#3e7a78" stroke-width="1.5"/>
-        <text x="500" y="510" class="map-label" text-anchor="middle">南方商业邦联</text>
-        <text x="500" y="528" class="map-label-sub" text-anchor="middle">港口 · 契约 · 中立</text>
+          <!-- Southern Sea / Maritime League (water region, slightly different shade) -->
+          <path class="region" data-region="maritime"
+                d="M 80 480 L 165 470 L 268 478 L 372 472 L 478 480 L 582 472 L 688 480 L 792 472 L 896 480 L 998 472 L 1090 478 L 1140 490 L 1156 520 L 1158 562 L 1152 608 L 1144 652 L 1130 692 L 1108 720 L 1075 738 L 1020 748 L 952 752 L 880 750 L 808 748 L 736 750 L 664 748 L 592 750 L 520 748 L 448 750 L 376 748 L 304 750 L 232 748 L 162 740 L 108 720 L 80 685 L 68 638 L 65 588 L 70 540 L 78 500 Z"
+                fill="#8aa4a0" stroke="#2a1f10" stroke-width="1.3" stroke-dasharray="3,2.5" opacity="0.78"/>
+        </g>
 
-        <!-- Small island groups in southern sea -->
-        <circle cx="280" cy="500" r="6" fill="#8aab9c" stroke="#3e7a78"/>
-        <circle cx="620" cy="495" r="5" fill="#8aab9c" stroke="#3e7a78"/>
-        <circle cx="750" cy="510" r="7" fill="#8aab9c" stroke="#3e7a78"/>
+        <!-- ===== INLAND SEA (overlay, non-interactive) ===== -->
+        <g pointer-events="none">
+          <path d="M 348 282 Q 380 268 418 274 Q 458 282 480 298 Q 498 318 488 342 Q 472 360 442 366 Q 405 370 372 360 Q 348 350 340 326 Q 336 300 348 282 Z"
+                fill="#9aa89e" stroke="#2a1f10" stroke-width="1.2"/>
+          <path d="M 348 282 Q 380 268 418 274 Q 458 282 480 298 Q 498 318 488 342 Q 472 360 442 366 Q 405 370 372 360 Q 348 350 340 326 Q 336 300 348 282 Z"
+                fill="url(#sea-waves)"/>
+          <text x="412" y="324" text-anchor="middle" class="map-label-small">内 海</text>
+        </g>
 
-        <!-- Oracle markers (stars) -->
+        <!-- ===== ISLANDS in southern sea ===== -->
+        <g pointer-events="none">
+          <ellipse cx="248" cy="618" rx="26" ry="11" fill="#c9b58a" stroke="#2a1f10" stroke-width="1"/>
+          <ellipse cx="408" cy="638" rx="20" ry="9" fill="#c9b58a" stroke="#2a1f10" stroke-width="1"/>
+          <ellipse cx="566" cy="612" rx="14" ry="7" fill="#c9b58a" stroke="#2a1f10" stroke-width="1"/>
+          <ellipse cx="688" cy="642" rx="22" ry="10" fill="#c9b58a" stroke="#2a1f10" stroke-width="1"/>
+          <ellipse cx="852" cy="618" rx="18" ry="9" fill="#c9b58a" stroke="#2a1f10" stroke-width="1"/>
+          <ellipse cx="998" cy="640" rx="24" ry="11" fill="#c9b58a" stroke="#2a1f10" stroke-width="1"/>
+        </g>
+
+        <!-- ===== TERRAIN (mountains, hills, forests, dunes) ===== -->
+        <g pointer-events="none">
+          <!-- Mountain range between Persia and Far East (vertical) -->
+          <g transform="translate(960 222)"><use href="#mtn" width="32" height="22"/></g>
+          <g transform="translate(972 248)"><use href="#mtn" width="34" height="24"/></g>
+          <g transform="translate(958 278)"><use href="#mtn" width="30" height="21"/></g>
+          <g transform="translate(972 308)"><use href="#mtn" width="34" height="24"/></g>
+          <g transform="translate(962 340)"><use href="#mtn" width="30" height="21"/></g>
+          <g transform="translate(974 370)"><use href="#mtn" width="32" height="22"/></g>
+          <g transform="translate(962 398)"><use href="#mtn" width="28" height="20"/></g>
+
+          <!-- Mountains in northern Hellas (Alps-like) -->
+          <g transform="translate(280 215)"><use href="#mtn-s" width="20" height="14"/></g>
+          <g transform="translate(308 222)"><use href="#mtn" width="24" height="17"/></g>
+          <g transform="translate(342 216)"><use href="#mtn" width="26" height="18"/></g>
+          <g transform="translate(380 222)"><use href="#mtn-s" width="20" height="14"/></g>
+          <g transform="translate(414 218)"><use href="#mtn" width="24" height="17"/></g>
+          <g transform="translate(452 222)"><use href="#mtn-s" width="22" height="15"/></g>
+
+          <!-- Mountains in central Persia (Zagros-like) -->
+          <g transform="translate(770 240)"><use href="#mtn" width="26" height="18"/></g>
+          <g transform="translate(802 248)"><use href="#mtn-s" width="22" height="15"/></g>
+          <g transform="translate(830 240)"><use href="#mtn" width="24" height="17"/></g>
+          <g transform="translate(862 246)"><use href="#mtn-s" width="22" height="15"/></g>
+
+          <!-- Hills along steppe-south border (defining the steppe) -->
+          <g transform="translate(150 178)"><use href="#hill" width="22" height="9"/></g>
+          <g transform="translate(220 180)"><use href="#hill" width="20" height="8"/></g>
+          <g transform="translate(298 182)"><use href="#hill" width="22" height="9"/></g>
+          <g transform="translate(388 180)"><use href="#hill" width="20" height="8"/></g>
+          <g transform="translate(478 182)"><use href="#hill" width="22" height="9"/></g>
+          <g transform="translate(560 180)"><use href="#hill" width="20" height="8"/></g>
+          <g transform="translate(650 182)"><use href="#hill" width="22" height="9"/></g>
+          <g transform="translate(742 180)"><use href="#hill" width="20" height="8"/></g>
+          <g transform="translate(840 182)"><use href="#hill" width="22" height="9"/></g>
+          <g transform="translate(940 180)"><use href="#hill" width="20" height="8"/></g>
+          <g transform="translate(1040 182)"><use href="#hill" width="22" height="9"/></g>
+
+          <!-- Dunes in steppe -->
+          <g transform="translate(280 125)"><use href="#dune" width="28" height="7"/></g>
+          <g transform="translate(450 110)"><use href="#dune" width="28" height="7"/></g>
+          <g transform="translate(620 130)"><use href="#dune" width="28" height="7"/></g>
+          <g transform="translate(800 115)"><use href="#dune" width="28" height="7"/></g>
+          <g transform="translate(960 128)"><use href="#dune" width="28" height="7"/></g>
+
+          <!-- Forests in southern Hellas -->
+          <g transform="translate(298 376)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(310 384)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(322 378)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(290 396)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(304 402)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(318 398)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(488 386)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(500 394)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(512 388)"><use href="#tree" width="9" height="12"/></g>
+
+          <!-- Forests in Far East -->
+          <g transform="translate(1042 358)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(1056 365)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(1070 360)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(1048 380)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(1062 386)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(1076 382)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(1086 400)"><use href="#tree" width="9" height="12"/></g>
+
+          <!-- Forests in New Continent -->
+          <g transform="translate(78 348)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(92 356)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(106 350)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(84 372)"><use href="#tree" width="9" height="12"/></g>
+          <g transform="translate(100 380)"><use href="#tree" width="9" height="12"/></g>
+        </g>
+
+        <!-- ===== RIVERS ===== -->
+        <g pointer-events="none" stroke="#3e5670" stroke-width="1.6" fill="none" opacity="0.8" stroke-linecap="round">
+          <!-- River in Persia (Tigris-Euphrates equivalent) -->
+          <path d="M 770 218 Q 776 248 786 278 Q 794 308 808 340 Q 822 372 838 400"/>
+          <!-- River in Hellas (Po/Danube equivalent flowing into the inland sea) -->
+          <path d="M 408 218 Q 418 245 428 270 Q 438 290 442 320 Q 444 350 440 380 Q 436 410 432 432"/>
+          <!-- River in Far East (Yangtze equivalent) -->
+          <path d="M 1042 218 Q 1048 248 1058 282 Q 1068 316 1078 350 Q 1086 380 1094 412"/>
+        </g>
+
+        <!-- ===== CITIES ===== -->
+        <g pointer-events="none">
+          <!-- Hellas capital (Athens-equivalent) -->
+          <g transform="translate(372 384)"><use href="#capital" width="13" height="13"/></g>
+          <text x="385" y="402" class="map-label-small">阿 特 纳</text>
+
+          <!-- Hellas second city (Roma-equivalent) -->
+          <g transform="translate(458 360)"><use href="#city" width="9" height="9"/></g>
+          <text x="470" y="368" class="map-label-small">罗 摩</text>
+
+          <!-- New Continent main port -->
+          <g transform="translate(98 332)"><use href="#city" width="9" height="9"/></g>
+          <text x="110" y="340" class="map-label-small">新港</text>
+
+          <!-- Contested Zone — treaty city -->
+          <g transform="translate(640 320)"><use href="#capital" width="14" height="14"/></g>
+          <text x="656" y="338" class="map-label-small">和 约 城</text>
+
+          <!-- Persia capital (Persepolis-equivalent) -->
+          <g transform="translate(830 348)"><use href="#capital" width="14" height="14"/></g>
+          <text x="846" y="366" class="map-label-small">众 王 之 城</text>
+
+          <!-- Persia trade city (Babylon-equivalent) -->
+          <g transform="translate(800 280)"><use href="#city" width="9" height="9"/></g>
+          <text x="812" y="288" class="map-label-small">河 间 城</text>
+
+          <!-- Persia inner city (Indus-equivalent) -->
+          <g transform="translate(910 392)"><use href="#city" width="9" height="9"/></g>
+          <text x="922" y="400" class="map-label-small">大河口</text>
+
+          <!-- Far East capital -->
+          <g transform="translate(1078 346)"><use href="#capital" width="13" height="13"/></g>
+          <text x="1062" y="332" class="map-label-small">天 京</text>
+
+          <!-- Maritime cities -->
+          <g transform="translate(688 642)"><use href="#city" width="9" height="9"/></g>
+          <text x="700" y="638" class="map-label-small">大海港</text>
+          <g transform="translate(852 618)"><use href="#city" width="9" height="9"/></g>
+          <text x="864" y="614" class="map-label-small">商邦</text>
+          <g transform="translate(408 638)"><use href="#city" width="9" height="9"/></g>
+          <text x="420" y="634" class="map-label-small">岛盟</text>
+        </g>
+
+        <!-- ===== POLITICAL BOUNDARIES (dotted) ===== -->
+        <g pointer-events="none" stroke="#3a2818" stroke-width="1.1" stroke-dasharray="3,3" fill="none" opacity="0.55">
+          <!-- Hellas / Contested boundary -->
+          <path d="M 580 200 Q 580 280 580 360 Q 580 410 588 432"/>
+          <!-- Contested / Persia boundary -->
+          <path d="M 718 200 Q 716 280 716 360 Q 716 410 712 432"/>
+          <!-- Steppe / south boundary - already implicit via hills -->
+          <!-- Persia / Far East mountain corridor -->
+          <path d="M 980 200 Q 982 280 980 360 Q 982 410 984 432"/>
+        </g>
+
+        <!-- ===== ORACLE MARKERS ===== -->
         <g id="oracle-markers">
-          <!-- Hellas oracle -->
-          <g class="oracle-marker" data-region="oracle-hellas" transform="translate(290 305)">
-            <polygon points="0,-8 2.4,-2.4 8,-2.4 3.6,1.4 5.6,7.6 0,4 -5.6,7.6 -3.6,1.4 -8,-2.4 -2.4,-2.4"
-                     fill="#f2eecf" stroke="#4a4a58" stroke-width="1.2"/>
+          <g class="oracle-marker" data-region="oracle-central" transform="translate(640 320)">
+            <use href="#oracle-star" width="26" height="26" x="-13" y="-13"/>
           </g>
-          <!-- Central oracle in contested zone -->
-          <g class="oracle-marker" data-region="oracle-central" transform="translate(478 320)">
-            <polygon points="0,-11 3.3,-3.3 11,-3.3 5,2 7.7,10.5 0,5.5 -7.7,10.5 -5,2 -11,-3.3 -3.3,-3.3"
-                     fill="#fffaf0" stroke="#4a4a58" stroke-width="1.5"/>
-            <circle cx="0" cy="0" r="2.5" fill="#4a4a58"/>
+          <g class="oracle-marker" data-region="oracle-hellas" transform="translate(372 384)">
+            <use href="#oracle-star" width="18" height="18" x="-9" y="-9"/>
           </g>
-          <!-- Persia oracle -->
-          <g class="oracle-marker" data-region="oracle-persia" transform="translate(660 305)">
-            <polygon points="0,-8 2.4,-2.4 8,-2.4 3.6,1.4 5.6,7.6 0,4 -5.6,7.6 -3.6,1.4 -8,-2.4 -2.4,-2.4"
-                     fill="#f2eecf" stroke="#4a4a58" stroke-width="1.2"/>
+          <g class="oracle-marker" data-region="oracle-persia" transform="translate(830 348)">
+            <use href="#oracle-star" width="18" height="18" x="-9" y="-9"/>
           </g>
-          <!-- Far East oracle -->
-          <g class="oracle-marker" data-region="oracle-fareast" transform="translate(880 320)">
-            <polygon points="0,-8 2.4,-2.4 8,-2.4 3.6,1.4 5.6,7.6 0,4 -5.6,7.6 -3.6,1.4 -8,-2.4 -2.4,-2.4"
-                     fill="#f2eecf" stroke="#4a4a58" stroke-width="1.2"/>
+          <g class="oracle-marker" data-region="oracle-fareast" transform="translate(1078 346)">
+            <use href="#oracle-star" width="18" height="18" x="-9" y="-9"/>
           </g>
-          <!-- Steppe oracle? -->
-          <g class="oracle-marker" data-region="oracle-steppe" transform="translate(500 110)">
-            <polygon points="0,-7 2.1,-2.1 7,-2.1 3.2,1.2 4.9,6.7 0,3.5 -4.9,6.7 -3.2,1.2 -7,-2.1 -2.1,-2.1"
-                     fill="#f2eecf" stroke="#4a4a58" stroke-width="1" opacity="0.7"/>
+          <g class="oracle-marker" data-region="oracle-steppe" transform="translate(600 118)">
+            <use href="#oracle-star" width="16" height="16" x="-8" y="-8"/>
           </g>
         </g>
 
-        <!-- Compass -->
-        <g transform="translate(940 540)" opacity="0.6">
-          <circle cx="0" cy="0" r="22" fill="none" stroke="#8a7e4a" stroke-width="0.8"/>
-          <text x="0" y="-12" text-anchor="middle" font-size="9" fill="#6a5e4a">N</text>
-          <text x="0" y="20" text-anchor="middle" font-size="9" fill="#6a5e4a">S</text>
-          <text x="-16" y="3" text-anchor="middle" font-size="9" fill="#6a5e4a">W</text>
-          <text x="16" y="3" text-anchor="middle" font-size="9" fill="#6a5e4a">E</text>
+        <!-- ===== REGION LABELS ===== -->
+        <g pointer-events="none">
+          <text x="600" y="118" text-anchor="middle" class="map-label-major">北  方  草  原</text>
+          <text x="600" y="138" text-anchor="middle" class="map-label-small" opacity="0.75">游 牧 诸 部</text>
+
+          <text x="93" y="298" text-anchor="middle" class="map-label-large">新 大 陆</text>
+          <text x="93" y="314" text-anchor="middle" class="map-label-small" opacity="0.75">大希腊属</text>
+
+          <text x="408" y="260" text-anchor="middle" class="map-label-major">大  希  腊</text>
+
+          <text x="640" y="262" text-anchor="middle" class="map-label-mid">过 渡 地 带</text>
+
+          <text x="838" y="232" text-anchor="middle" class="map-label-major">大  波  斯</text>
+
+          <text x="1062" y="262" text-anchor="middle" class="map-label-large">远 东 诸 天 朝</text>
+
+          <text x="600" y="588" text-anchor="middle" class="map-label-major">南  方  商  业  邦  联</text>
+
+          <!-- Ocean labels -->
+          <text x="200" y="400" text-anchor="middle" class="map-label-small" opacity="0.6" font-style="italic" transform="rotate(-15 200 400)">西 洋</text>
+          <text x="1180" y="350" text-anchor="middle" class="map-label-small" opacity="0.6" transform="rotate(90 1180 350)">东 洋</text>
         </g>
+
+        <!-- ===== COMPASS ROSE ===== -->
+        <g transform="translate(110 700)" pointer-events="none">
+          <circle cx="0" cy="0" r="52" fill="#e8d4a8" stroke="#2a1f10" stroke-width="1.3" opacity="0.92"/>
+          <circle cx="0" cy="0" r="44" fill="none" stroke="#2a1f10" stroke-width="0.5"/>
+          <circle cx="0" cy="0" r="36" fill="none" stroke="#2a1f10" stroke-width="0.4" stroke-dasharray="2,3"/>
+          <!-- Major points -->
+          <polygon points="0,-46 6,-2 0,46 -6,-2" fill="#2a1f10" opacity="0.85"/>
+          <polygon points="-46,0 -2,-6 46,0 -2,6" fill="#2a1f10" opacity="0.55"/>
+          <!-- North highlight -->
+          <polygon points="0,-46 6,-2 0,0" fill="#a8482a"/>
+          <!-- Diagonal points -->
+          <polygon points="-32,-32 -2,-2 32,32 2,2" fill="#2a1f10" opacity="0.4"/>
+          <polygon points="32,-32 2,-2 -32,32 -2,2" fill="#2a1f10" opacity="0.4"/>
+          <!-- Cardinal letters -->
+          <text x="0" y="-58" text-anchor="middle" font-size="13" fill="#2a1f10" font-style="italic" font-weight="bold" font-family="Georgia,serif">N</text>
+          <text x="0" y="68" text-anchor="middle" font-size="11" fill="#2a1f10" font-style="italic" font-family="Georgia,serif">S</text>
+          <text x="-62" y="5" text-anchor="middle" font-size="11" fill="#2a1f10" font-style="italic" font-family="Georgia,serif">W</text>
+          <text x="62" y="5" text-anchor="middle" font-size="11" fill="#2a1f10" font-style="italic" font-family="Georgia,serif">E</text>
+        </g>
+
+        <!-- ===== TITLE CARTOUCHE ===== -->
+        <g pointer-events="none">
+          <rect x="430" y="36" width="340" height="64" fill="#e8d4a8" stroke="#2a1f10" stroke-width="1.5" opacity="0.94"/>
+          <rect x="436" y="42" width="328" height="52" fill="none" stroke="#2a1f10" stroke-width="0.5"/>
+          <!-- Ornamental flourishes -->
+          <path d="M 420 68 L 430 60 L 430 76 Z" fill="#2a1f10" opacity="0.8"/>
+          <path d="M 780 68 L 770 60 L 770 76 Z" fill="#2a1f10" opacity="0.8"/>
+          <circle cx="414" cy="68" r="2.5" fill="#a8482a"/>
+          <circle cx="786" cy="68" r="2.5" fill="#a8482a"/>
+          <text x="600" y="68" text-anchor="middle" font-size="20" font-style="italic" fill="#2a1f10" font-family="Georgia,serif" font-weight="600" letter-spacing="6">已 知 世 界</text>
+          <text x="600" y="88" text-anchor="middle" font-size="10" font-style="italic" fill="#5a4028" font-family="Georgia,serif" letter-spacing="2">— 空和平条约后第十年 —</text>
+        </g>
+
+        <!-- ===== SCALE BAR ===== -->
+        <g transform="translate(1010 738)" pointer-events="none">
+          <line x1="0" y1="0" x2="120" y2="0" stroke="#2a1f10" stroke-width="1.5"/>
+          <line x1="0" y1="-4" x2="0" y2="4" stroke="#2a1f10" stroke-width="1.2"/>
+          <line x1="60" y1="-3" x2="60" y2="3" stroke="#2a1f10" stroke-width="0.8"/>
+          <line x1="120" y1="-4" x2="120" y2="4" stroke="#2a1f10" stroke-width="1.2"/>
+          <text x="60" y="-8" text-anchor="middle" font-size="9" fill="#2a1f10" font-style="italic" font-family="Georgia,serif">一千里</text>
+        </g>
+
+        <!-- ===== DECORATIVE BORDER ===== -->
+        <g pointer-events="none">
+          <rect x="8" y="8" width="1184" height="784" fill="none" stroke="#2a1f10" stroke-width="2.5"/>
+          <rect x="16" y="16" width="1168" height="768" fill="none" stroke="#2a1f10" stroke-width="0.6"/>
+          <rect x="20" y="20" width="1160" height="760" fill="none" stroke="#2a1f10" stroke-width="0.3" stroke-dasharray="2,2"/>
+          <!-- Corner ornaments -->
+          <g stroke="#2a1f10" fill="#2a1f10">
+            <!-- TL -->
+            <path d="M 16 38 L 38 16" stroke-width="1.2" fill="none"/>
+            <circle cx="27" cy="27" r="3.5" fill="#a8482a" stroke="#2a1f10" stroke-width="0.8"/>
+            <circle cx="27" cy="27" r="1.2" fill="#2a1f10"/>
+            <!-- TR -->
+            <path d="M 1184 38 L 1162 16" stroke-width="1.2" fill="none"/>
+            <circle cx="1173" cy="27" r="3.5" fill="#a8482a" stroke="#2a1f10" stroke-width="0.8"/>
+            <circle cx="1173" cy="27" r="1.2" fill="#2a1f10"/>
+            <!-- BL -->
+            <path d="M 16 762 L 38 784" stroke-width="1.2" fill="none"/>
+            <circle cx="27" cy="773" r="3.5" fill="#a8482a" stroke="#2a1f10" stroke-width="0.8"/>
+            <circle cx="27" cy="773" r="1.2" fill="#2a1f10"/>
+            <!-- BR -->
+            <path d="M 1184 762 L 1162 784" stroke-width="1.2" fill="none"/>
+            <circle cx="1173" cy="773" r="3.5" fill="#a8482a" stroke="#2a1f10" stroke-width="0.8"/>
+            <circle cx="1173" cy="773" r="1.2" fill="#2a1f10"/>
+          </g>
+        </g>
+
+        <!-- ===== PAPER GRAIN OVERLAY ===== -->
+        <rect width="1200" height="800" fill="#8a6230" opacity="0.08" filter="url(#paper-grain)" pointer-events="none"/>
+        <!-- Vignette darkening at edges for aged feel -->
+        <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+          <stop offset="60%" stop-color="#000" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#3a2818" stop-opacity="0.45"/>
+        </radialGradient>
+        <rect width="1200" height="800" fill="url(#vignette)" pointer-events="none"/>
       </svg>
       <div class="map-hint">点击 · 探索</div>
     </div>
@@ -902,13 +1271,13 @@
       </div>
 
       <div class="map-legend">
-        <span><span class="swatch" style="background:#6a8bb3"></span>大希腊</span>
-        <span><span class="swatch" style="background:#c89568"></span>大波斯</span>
-        <span><span class="swatch" style="background:#a85858"></span>远东</span>
-        <span><span class="swatch" style="background:#9d7aa0"></span>过渡地带</span>
-        <span><span class="swatch" style="background:#c8b888"></span>草原</span>
-        <span><span class="swatch" style="background:#7aa9a8"></span>商业邦联</span>
-        <span><span class="swatch" style="background:#7a9bbc"></span>新大陆</span>
+        <span><span class="swatch" style="background:#cbb487"></span>大希腊</span>
+        <span><span class="swatch" style="background:#cbab7a"></span>大波斯</span>
+        <span><span class="swatch" style="background:#c8a98c"></span>远东</span>
+        <span><span class="swatch" style="background:#c0a682"></span>过渡地带</span>
+        <span><span class="swatch" style="background:#d6c290"></span>草原</span>
+        <span><span class="swatch" style="background:#8aa4a0"></span>商业邦联</span>
+        <span><span class="swatch" style="background:#c4a878"></span>新大陆</span>
       </div>
     </div>
   </div>
